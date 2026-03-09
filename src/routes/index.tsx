@@ -1,89 +1,71 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '#/components/ui/table'
 
-export const Route = createFileRoute('/')({ component: App })
+export const Route = createFileRoute('/')({ component: HomePage })
 
-function App() {
+// Placeholder until server functions are wired up
+const mockProjects = [
+  { id: 1, name: 'Villa North Wing', address: '12 Nile St, Cairo', user: 'Ahmed Hassan', windowCount: 4, createdAt: '2026-01-10' },
+  { id: 2, name: 'Office Block B', address: '5 Tahrir Sq, Cairo', user: 'Sara Ali', windowCount: 7, createdAt: '2026-02-03' },
+  { id: 3, name: 'Compound Unit 3', address: '88 Maadi Rd, Giza', user: 'Mohamed Khaled', windowCount: 2, createdAt: '2026-03-01' },
+]
+
+function HomePage() {
+  const navigate = useNavigate()
+
   return (
-    <main className="page-wrap px-4 pb-8 pt-14">
-      <section className="island-shell rise-in relative overflow-hidden rounded-[2rem] px-6 py-10 sm:px-10 sm:py-14">
-        <div className="pointer-events-none absolute -left-20 -top-24 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(79,184,178,0.32),transparent_66%)]" />
-        <div className="pointer-events-none absolute -bottom-20 -right-20 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(47,106,74,0.18),transparent_66%)]" />
-        <p className="island-kicker mb-3">TanStack Start Base Template</p>
-        <h1 className="display-title mb-5 max-w-3xl text-4xl leading-[1.02] font-bold tracking-tight text-[var(--sea-ink)] sm:text-6xl">
-          Island hours, but for product teams.
-        </h1>
-        <p className="mb-8 max-w-2xl text-base text-[var(--sea-ink-soft)] sm:text-lg">
-          A tropical, breathable app starter with full-document SSR, server
-          functions, streaming, and type-safe routing. Calm on the eyes. Fast in
-          production.
+    <main className="p-6">
+      <h1 className="mb-6 text-2xl font-bold text-[var(--sea-ink)]">Projects</h1>
+
+      {mockProjects.length === 0 ? (
+        <p className="text-[var(--sea-ink-soft)]">
+          No projects yet. Click <strong>New Project</strong> to get started.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <a
-            href="/blog"
-            className="rounded-full border border-[rgba(50,143,151,0.3)] bg-[rgba(79,184,178,0.14)] px-5 py-2.5 text-sm font-semibold text-[var(--lagoon-deep)] no-underline transition hover:-translate-y-0.5 hover:bg-[rgba(79,184,178,0.24)]"
-          >
-            Explore Posts
-          </a>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-[rgba(23,58,64,0.2)] bg-white/50 px-5 py-2.5 text-sm font-semibold text-[var(--sea-ink)] no-underline transition hover:-translate-y-0.5 hover:border-[rgba(23,58,64,0.35)]"
-          >
-            Router Guide
-          </a>
+      ) : (
+        <div className="rounded-lg border border-[var(--line)] overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>#</TableHead>
+                <TableHead>Project Name</TableHead>
+                <TableHead>Address</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead className="text-center">Windows</TableHead>
+                <TableHead>Created</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockProjects.map((project) => (
+                <TableRow
+                  key={project.id}
+                  className="cursor-pointer"
+                  onDoubleClick={() =>
+                    navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+                  }
+                >
+                  <TableCell className="text-[var(--sea-ink-soft)]">{project.id}</TableCell>
+                  <TableCell className="font-medium text-[var(--sea-ink)]">{project.name}</TableCell>
+                  <TableCell className="text-[var(--sea-ink-soft)]">{project.address}</TableCell>
+                  <TableCell className="text-[var(--sea-ink-soft)]">{project.user}</TableCell>
+                  <TableCell className="text-center text-[var(--sea-ink-soft)]">{project.windowCount}</TableCell>
+                  <TableCell className="text-[var(--sea-ink-soft)]">{project.createdAt}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
-      </section>
+      )}
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          [
-            'Type-Safe Routing',
-            'Routes and links stay in sync across every page.',
-          ],
-          [
-            'Server Functions',
-            'Call server code from your UI without creating API boilerplate.',
-          ],
-          [
-            'Streaming by Default',
-            'Ship progressively rendered responses for faster experiences.',
-          ],
-          [
-            'Tailwind Native',
-            'Design quickly with utility-first styling and custom tokens.',
-          ],
-        ].map(([title, desc], index) => (
-          <article
-            key={title}
-            className="island-shell feature-card rise-in rounded-2xl p-5"
-            style={{ animationDelay: `${index * 90 + 80}ms` }}
-          >
-            <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">
-              {title}
-            </h2>
-            <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="island-shell mt-8 rounded-2xl p-6">
-        <p className="island-kicker mb-2">Quick Start</p>
-        <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-[var(--sea-ink-soft)]">
-          <li>
-            Edit <code>src/routes/index.tsx</code> to customize the hero and
-            product narrative.
-          </li>
-          <li>
-            Update <code>src/components/Header.tsx</code> and{' '}
-            <code>src/components/Footer.tsx</code> for brand links.
-          </li>
-          <li>
-            Add routes in <code>src/routes</code> and tweak visual tokens in{' '}
-            <code>src/styles.css</code>.
-          </li>
-        </ul>
-      </section>
+      <p className="mt-4 text-xs text-[var(--sea-ink-soft)]">
+        Double-click a row to view its windows.
+      </p>
     </main>
   )
 }

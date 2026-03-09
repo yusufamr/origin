@@ -1,6 +1,29 @@
-import { Outlet, createRootRoute } from '@tanstack/react-router'
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { TanStackDevtools } from '@tanstack/react-devtools'
+import { Outlet, createRootRoute, Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Check, ChevronsUpDown } from 'lucide-react'
+import { Button } from '#/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '#/components/ui/dialog'
+import { Input } from '#/components/ui/input'
+import { Label } from '#/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '#/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '#/components/ui/command'
+import { cn } from '#/lib/utils'
 
 import '../styles.css'
 
@@ -8,21 +31,132 @@ export const Route = createRootRoute({
   component: RootComponent,
 })
 
+// Placeholder until server functions are wired up
+const mockUsers = [
+  { id: 1, firstName: 'Ahmed', lastName: 'Hassan', phone: '+201001234567' },
+  { id: 2, firstName: 'Sara', lastName: 'Ali', phone: '+201112345678' },
+  { id: 3, firstName: 'Mohamed', lastName: 'Khaled', phone: '+201223456789' },
+]
+
 function RootComponent() {
+  const [userOpen, setUserOpen] = useState(false)
+  const [projectOpen, setProjectOpen] = useState(false)
+  const [comboOpen, setComboOpen] = useState(false)
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+
+  const selectedUser = mockUsers.find((u) => u.id === selectedUserId)
+
   return (
     <>
+      <header className="flex items-center gap-3 border-b border-[var(--line)] bg-[var(--header-bg)] px-6 py-3 backdrop-blur">
+        <Link to="/">
+          <Button variant="ghost">Home</Button>
+        </Link>
+        <Button onClick={() => setUserOpen(true)}>New User</Button>
+        <Button onClick={() => setProjectOpen(true)}>New Project</Button>
+      </header>
+
       <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'TanStack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-        ]}
-      />
+
+      {/* New User Dialog */}
+      <Dialog open={userOpen} onOpenChange={setUserOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New User</DialogTitle>
+          </DialogHeader>
+          <form className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input id="firstName" placeholder="John" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input id="lastName" placeholder="Doe" />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="phone">Phone Number</Label>
+              <Input id="phone" type="tel" placeholder="+1234567890" />
+            </div>
+            <Button type="submit" className="mt-2">Create User</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Project Dialog */}
+      <Dialog open={projectOpen} onOpenChange={setProjectOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create New Project</DialogTitle>
+          </DialogHeader>
+          <form className="flex flex-col gap-4 pt-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="projectName">Project Name</Label>
+              <Input id="projectName" placeholder="e.g. Villa North Wing" />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="address">Address</Label>
+              <Input id="address" placeholder="e.g. 12 Nile St, Cairo" />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <Label>Assign to User</Label>
+              <Popover open={comboOpen} onOpenChange={setComboOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={comboOpen}
+                    className="w-full justify-between font-normal"
+                  >
+                    {selectedUser
+                      ? `${selectedUser.firstName} ${selectedUser.lastName} — ${selectedUser.phone}`
+                      : 'Select a user...'}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search by name or phone..." />
+                    <CommandList>
+                      <CommandEmpty>No users found.</CommandEmpty>
+                      <CommandGroup>
+                        {mockUsers.map((user) => (
+                          <CommandItem
+                            key={user.id}
+                            value={`${user.firstName} ${user.lastName} ${user.phone}`}
+                            onSelect={() => {
+                              setSelectedUserId(user.id)
+                              setComboOpen(false)
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                'mr-2 h-4 w-4',
+                                selectedUserId === user.id ? 'opacity-100' : 'opacity-0',
+                              )}
+                            />
+                            <span className="font-medium">
+                              {user.firstName} {user.lastName}
+                            </span>
+                            <span className="ml-auto text-xs text-muted-foreground">
+                              {user.phone}
+                            </span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
+
+            <Button type="submit" className="mt-2" disabled={!selectedUserId}>
+              Create Project
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
