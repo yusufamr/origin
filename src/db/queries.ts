@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { db } from ".";
 import { users, projects, windows } from ".";
 import type { NewUser, NewProject, NewWindow } from ".";
@@ -20,6 +20,30 @@ export function createUser(data: NewUser) {
 }
 
 // ── Projects ───────────────────────────────────────────────────────────────
+
+export function listProjects() {
+  return db
+    .select({
+      id: projects.id,
+      name: projects.name,
+      address: projects.address,
+      createdAt: projects.createdAt,
+      userFirstName: users.firstName,
+      userLastName: users.lastName,
+      userPhone: users.phone,
+      windowCount: count(windows.id),
+    })
+    .from(projects)
+    .leftJoin(users, eq(projects.userId, users.id))
+    .leftJoin(windows, eq(windows.projectId, projects.id))
+    .groupBy(projects.id, users.id);
+}
+
+export function getProjectById(id: number) {
+  return db.query.projects.findFirst({
+    where: eq(projects.id, id),
+  });
+}
 
 export function listProjectsByUser(userId: number) {
   return db.query.projects.findMany({
