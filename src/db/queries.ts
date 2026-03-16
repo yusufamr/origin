@@ -1,22 +1,22 @@
 import { eq, count } from "drizzle-orm";
 import { db } from ".";
-import { users, projects, windows } from ".";
-import type { NewUser, NewProject, NewWindow } from ".";
+import { clients, projects, windows } from ".";
+import type { NewClient, NewProject, NewWindow } from ".";
 
-// ── Users ──────────────────────────────────────────────────────────────────
+// ── Clients ─────────────────────────────────────────────────────────────────
 
-export function findUserByPhone(phone: string) {
-  return db.query.users.findFirst({
-    where: eq(users.phone, phone),
+export function findClientByPhone(phone: string) {
+  return db.query.clients.findFirst({
+    where: eq(clients.phone, phone),
   });
 }
 
-export function listUsers() {
-  return db.query.users.findMany();
+export function listClients() {
+  return db.query.clients.findMany();
 }
 
-export function createUser(data: NewUser) {
-  return db.insert(users).values(data).returning();
+export function createClient(data: NewClient) {
+  return db.insert(clients).values(data).returning();
 }
 
 // ── Projects ───────────────────────────────────────────────────────────────
@@ -28,15 +28,15 @@ export function listProjects() {
       name: projects.name,
       address: projects.address,
       createdAt: projects.createdAt,
-      userFirstName: users.firstName,
-      userLastName: users.lastName,
-      userPhone: users.phone,
+      clientFirstName: clients.firstName,
+      clientLastName: clients.lastName,
+      clientPhone: clients.phone,
       windowCount: count(windows.id),
     })
     .from(projects)
-    .leftJoin(users, eq(projects.userId, users.id))
+    .leftJoin(clients, eq(projects.clientId, clients.id))
     .leftJoin(windows, eq(windows.projectId, projects.id))
-    .groupBy(projects.id, users.id);
+    .groupBy(projects.id, clients.id);
 }
 
 export function getProjectById(id: number) {
@@ -45,9 +45,9 @@ export function getProjectById(id: number) {
   });
 }
 
-export function listProjectsByUser(userId: number) {
+export function listProjectsByClient(clientId: number) {
   return db.query.projects.findMany({
-    where: eq(projects.userId, userId),
+    where: eq(projects.clientId, clientId),
   });
 }
 

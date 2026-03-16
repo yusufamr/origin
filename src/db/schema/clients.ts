@@ -1,7 +1,7 @@
 import { pgTable, serial, text, unique } from "drizzle-orm/pg-core";
 
-export const users = pgTable(
-  "users",
+export const clients = pgTable(
+  "clients",
   {
     id: serial("id").primaryKey(),
     firstName: text("first_name").notNull(),
@@ -11,5 +11,5 @@ export const users = pgTable(
   (t) => [unique().on(t.phone)]
 );
 
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
+export type Client = typeof clients.$inferSelect;
+export type NewClient = typeof clients.$inferInsert;

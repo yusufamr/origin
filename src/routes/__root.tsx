@@ -32,23 +32,23 @@ export const Route = createRootRoute({
 })
 
 // Placeholder until server functions are wired up
-const mockUsers = [
+const mockClients = [
   { id: 1, firstName: 'Ahmed', lastName: 'Hassan', phone: '+201001234567' },
   { id: 2, firstName: 'Sara', lastName: 'Ali', phone: '+201112345678' },
   { id: 3, firstName: 'Mohamed', lastName: 'Khaled', phone: '+201223456789' },
 ]
 
 function RootComponent() {
-  const [userOpen, setUserOpen] = useState(false)
+  const [clientOpen, setClientOpen] = useState(false)
   const [projectOpen, setProjectOpen] = useState(false)
   const [comboOpen, setComboOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
   const [cityOpen, setCityOpen] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<'sent' | 'done' | null>(null)
   const [selectedCity, setSelectedCity] = useState<'cairo' | 'alex' | 'giza' | null>(null)
 
-  const selectedUser = mockUsers.find((u) => u.id === selectedUserId)
+  const selectedClient = mockClients.find((c) => c.id === selectedClientId)
 
   const statuses = [
     { value: 'sent' as const, label: 'Sent' },
@@ -67,17 +67,17 @@ function RootComponent() {
         <Link to="/">
           <Button variant="ghost">Home</Button>
         </Link>
-        <Button onClick={() => setUserOpen(true)}>New User</Button>
+        <Button onClick={() => setClientOpen(true)}>New Client</Button>
         <Button onClick={() => setProjectOpen(true)}>New Project</Button>
       </header>
 
       <Outlet />
 
-      {/* New User Dialog */}
-      <Dialog open={userOpen} onOpenChange={setUserOpen}>
+      {/* New Client Dialog */}
+      <Dialog open={clientOpen} onOpenChange={setClientOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New User</DialogTitle>
+            <DialogTitle>Create New Client</DialogTitle>
           </DialogHeader>
           <form className="flex flex-col gap-4 pt-2">
             <div className="flex flex-col gap-1.5">
@@ -92,7 +92,7 @@ function RootComponent() {
               <Label htmlFor="phone">Phone Number</Label>
               <Input id="phone" type="tel" placeholder="+1234567890" />
             </div>
-            <Button type="submit" className="mt-2">Create User</Button>
+            <Button type="submit" className="mt-2">Create Client</Button>
           </form>
         </DialogContent>
       </Dialog>
@@ -207,7 +207,7 @@ function RootComponent() {
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Assign to User</Label>
+              <Label>Assign to Client</Label>
               <Popover open={comboOpen} onOpenChange={setComboOpen}>
                 <PopoverTrigger asChild>
                   <Button
@@ -216,9 +216,9 @@ function RootComponent() {
                     aria-expanded={comboOpen}
                     className="w-full justify-between font-normal"
                   >
-                    {selectedUser
-                      ? `${selectedUser.firstName} ${selectedUser.lastName} — ${selectedUser.phone}`
-                      : 'Select a user...'}
+                    {selectedClient
+                      ? `${selectedClient.firstName} ${selectedClient.lastName} — ${selectedClient.phone}`
+                      : 'Select a client...'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -226,28 +226,28 @@ function RootComponent() {
                   <Command>
                     <CommandInput placeholder="Search by name or phone..." />
                     <CommandList>
-                      <CommandEmpty>No users found.</CommandEmpty>
+                      <CommandEmpty>No clients found.</CommandEmpty>
                       <CommandGroup>
-                        {mockUsers.map((user) => (
+                        {mockClients.map((c) => (
                           <CommandItem
-                            key={user.id}
-                            value={`${user.firstName} ${user.lastName} ${user.phone}`}
+                            key={c.id}
+                            value={`${c.firstName} ${c.lastName} ${c.phone}`}
                             onSelect={() => {
-                              setSelectedUserId(user.id)
+                              setSelectedClientId(c.id)
                               setComboOpen(false)
                             }}
                           >
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                selectedUserId === user.id ? 'opacity-100' : 'opacity-0',
+                                selectedClientId === c.id ? 'opacity-100' : 'opacity-0',
                               )}
                             />
                             <span className="font-medium">
-                              {user.firstName} {user.lastName}
+                              {c.firstName} {c.lastName}
                             </span>
                             <span className="ml-auto text-xs text-muted-foreground">
-                              {user.phone}
+                              {c.phone}
                             </span>
                           </CommandItem>
                         ))}
@@ -258,7 +258,7 @@ function RootComponent() {
               </Popover>
             </div>
 
-            <Button type="submit" className="mt-2" disabled={!selectedUserId || !selectedCity}>
+            <Button type="submit" className="mt-2" disabled={!selectedClientId || !selectedCity}>
               Create Project
             </Button>
           </form>

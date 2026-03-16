@@ -1,14 +1,14 @@
 import { pgTable, serial, integer, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
-import { users } from "./users";
+import { clients } from "./clients";
 
 export const projectStatusEnum = pgEnum("project_status", ["sent", "done"]);
 export const projectCityEnum = pgEnum("project_city", ["cairo", "alex", "giza"]);
 
 export const projects = pgTable("projects", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id")
+  clientId: integer("client_id")
     .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
+    .references(() => clients.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   address: text("address").notNull(),
   status: projectStatusEnum("status").notNull().default("sent"),

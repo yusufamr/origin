@@ -14,7 +14,7 @@ interface Project {
   name: string
   address: string
   city: string
-  user: string
+  client: string
   status: 'sent' | 'done'
   windowCount: number
   createdAt: string
@@ -55,7 +55,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
               <TableCell className="font-medium text-[var(--sea-ink)]">{project.name}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.address}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.city}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.user}</TableCell>
+              <TableCell className="text-[var(--sea-ink-soft)]">{project.client}</TableCell>
               <TableCell>
                 <StatusBadge status={project.status} />
               </TableCell>
