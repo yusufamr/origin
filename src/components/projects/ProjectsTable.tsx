@@ -8,6 +8,7 @@ import {
   TableRow,
 } from '#/components/ui/table'
 import { StatusBadge } from './StatusBadge'
+import { PhoneCell } from '#/components/shared/PhoneCell'
 
 interface Project {
   id: number
@@ -60,10 +61,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
               <TableCell className="text-[var(--sea-ink-soft)]">{project.city}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.client}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">
-                <div>{project.clientPhone}</div>
-                {project.clientPhone2 && (
-                  <div className="text-xs opacity-70">{project.clientPhone2}</div>
-                )}
+                <PhoneCell phone={project.clientPhone} phone2={project.clientPhone2} />
               </TableCell>
               <TableCell>
                 <StatusBadge status={project.status} />

@@ -67,6 +67,9 @@ function RootComponent() {
         <Link to="/">
           <Button variant="ghost">Home</Button>
         </Link>
+        <Link to="/clients">
+          <Button variant="ghost">Clients</Button>
+        </Link>
         <Button onClick={() => setClientOpen(true)}>New Client</Button>
         <Button onClick={() => setProjectOpen(true)}>New Project</Button>
       </header>
