@@ -92,6 +92,10 @@ function RootComponent() {
               <Label htmlFor="phone">Phone Number</Label>
               <Input id="phone" type="tel" placeholder="+1234567890" />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="phone2">Phone Number 2 <span className="text-muted-foreground">(optional)</span></Label>
+              <Input id="phone2" type="tel" placeholder="+1234567890" />
+            </div>
             <Button type="submit" className="mt-2">Create Client</Button>
           </form>
         </DialogContent>

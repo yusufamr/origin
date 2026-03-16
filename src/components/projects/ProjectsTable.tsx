@@ -15,6 +15,8 @@ interface Project {
   address: string
   city: string
   client: string
+  clientPhone: string
+  clientPhone2?: string | null
   status: 'sent' | 'done'
   windowCount: number
   createdAt: string
@@ -37,6 +39,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
             <TableHead>Address</TableHead>
             <TableHead>City</TableHead>
             <TableHead>Client</TableHead>
+            <TableHead>Phone</TableHead>
             <TableHead>Status</TableHead>
             <TableHead className="text-center">Windows</TableHead>
             <TableHead>Created</TableHead>
@@ -56,6 +59,12 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
               <TableCell className="text-[var(--sea-ink-soft)]">{project.address}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.city}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.client}</TableCell>
+              <TableCell className="text-[var(--sea-ink-soft)]">
+                <div>{project.clientPhone}</div>
+                {project.clientPhone2 && (
+                  <div className="text-xs opacity-70">{project.clientPhone2}</div>
+                )}
+              </TableCell>
               <TableCell>
                 <StatusBadge status={project.status} />
               </TableCell>

@@ -7,6 +7,7 @@ export const clients = pgTable(
     firstName: text("first_name").notNull(),
     lastName: text("last_name").notNull(),
     phone: text("phone").notNull(),
+    phone2: text("phone_2"),
   },
   (t) => [unique().on(t.phone)]
 );

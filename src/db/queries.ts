@@ -31,6 +31,7 @@ export function listProjects() {
       clientFirstName: clients.firstName,
       clientLastName: clients.lastName,
       clientPhone: clients.phone,
+      clientPhone2: clients.phone2,
       windowCount: count(windows.id),
     })
     .from(projects)
