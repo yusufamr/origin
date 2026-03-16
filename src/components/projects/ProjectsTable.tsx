@@ -9,6 +9,9 @@ import {
 } from '#/components/ui/table'
 import { StatusBadge } from './StatusBadge'
 import { PhoneCell } from '#/components/shared/PhoneCell'
+import { getSession } from '#/lib/auth'
+import { Trash2 } from 'lucide-react'
+import { Button } from '#/components/ui/button'
 
 interface Project {
   id: number
@@ -25,10 +28,12 @@ interface Project {
 
 interface ProjectsTableProps {
   projects: Project[]
+  onDelete?: (id: number) => void
 }
 
-export function ProjectsTable({ projects }: ProjectsTableProps) {
+export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
   const navigate = useNavigate()
+  const isAdmin = getSession()?.role === 'admin'
 
   return (
     <div className="rounded-lg border border-[var(--line)] overflow-hidden">
@@ -44,6 +49,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
             <TableHead>Status</TableHead>
             <TableHead className="text-center">Windows</TableHead>
             <TableHead>Created</TableHead>
+            {isAdmin && <TableHead />}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -68,6 +74,18 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
               </TableCell>
               <TableCell className="text-center text-[var(--sea-ink-soft)]">{project.windowCount}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.createdAt}</TableCell>
+              {isAdmin && (
+                <TableCell onClick={(e) => e.stopPropagation()}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => onDelete?.(project.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>
