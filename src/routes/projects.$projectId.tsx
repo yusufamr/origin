@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { Button } from '#/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '#/components/ui/card'
+import { WindowGrid } from '#/components/windows/WindowGrid'
 
 export const Route = createFileRoute('/projects/$projectId')({
   component: ProjectPage,
@@ -36,26 +36,7 @@ function ProjectPage() {
           No windows yet. Click <strong>Add Window</strong> to get started.
         </p>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {mockWindows.map((win) => (
-            <Card key={win.id}>
-              <CardHeader>
-                <CardTitle className="text-base">
-                  {win.type} — {win.subtype}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-1 text-sm text-[var(--sea-ink-soft)]">
-                <p>Category: {win.category}</p>
-                <p>Size: {win.width}m × {win.totalHeight}m</p>
-                <p>Color: {win.color}</p>
-                <p>Count: {win.count}</p>
-                <p className="font-semibold text-[var(--sea-ink)]">
-                  Total: {win.totalPrice.toLocaleString()} EGP
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <WindowGrid windows={mockWindows} />
       )}
     </main>
   )
