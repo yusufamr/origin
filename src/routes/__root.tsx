@@ -42,9 +42,24 @@ function RootComponent() {
   const [userOpen, setUserOpen] = useState(false)
   const [projectOpen, setProjectOpen] = useState(false)
   const [comboOpen, setComboOpen] = useState(false)
+  const [statusOpen, setStatusOpen] = useState(false)
+  const [cityOpen, setCityOpen] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null)
+  const [selectedStatus, setSelectedStatus] = useState<'sent' | 'done' | null>(null)
+  const [selectedCity, setSelectedCity] = useState<'cairo' | 'alex' | 'giza' | null>(null)
 
   const selectedUser = mockUsers.find((u) => u.id === selectedUserId)
+
+  const statuses = [
+    { value: 'sent' as const, label: 'Sent' },
+    { value: 'done' as const, label: 'Done' },
+  ]
+
+  const cities = [
+    { value: 'cairo' as const, label: 'Cairo' },
+    { value: 'alex' as const, label: 'Alexandria' },
+    { value: 'giza' as const, label: 'Giza' },
+  ]
 
   return (
     <>
@@ -99,6 +114,98 @@ function RootComponent() {
               <Input id="address" placeholder="e.g. 12 Nile St, Cairo" />
             </div>
 
+            <div className="flex gap-3">
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Label>Status</Label>
+                <Popover open={statusOpen} onOpenChange={setStatusOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={statusOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {selectedStatus
+                        ? statuses.find((s) => s.value === selectedStatus)?.label
+                        : 'Select status...'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-40 p-0" align="start">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {statuses.map((s) => (
+                            <CommandItem
+                              key={s.value}
+                              value={s.value}
+                              onSelect={() => {
+                                setSelectedStatus(s.value)
+                                setStatusOpen(false)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  selectedStatus === s.value ? 'opacity-100' : 'opacity-0',
+                                )}
+                              />
+                              {s.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex flex-1 flex-col gap-1.5">
+                <Label>City</Label>
+                <Popover open={cityOpen} onOpenChange={setCityOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={cityOpen}
+                      className="w-full justify-between font-normal"
+                    >
+                      {selectedCity
+                        ? cities.find((c) => c.value === selectedCity)?.label
+                        : 'Select city...'}
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-44 p-0" align="start">
+                    <Command>
+                      <CommandList>
+                        <CommandGroup>
+                          {cities.map((c) => (
+                            <CommandItem
+                              key={c.value}
+                              value={c.value}
+                              onSelect={() => {
+                                setSelectedCity(c.value)
+                                setCityOpen(false)
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  'mr-2 h-4 w-4',
+                                  selectedCity === c.value ? 'opacity-100' : 'opacity-0',
+                                )}
+                              />
+                              {c.label}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+
             <div className="flex flex-col gap-1.5">
               <Label>Assign to User</Label>
               <Popover open={comboOpen} onOpenChange={setComboOpen}>
@@ -151,7 +258,7 @@ function RootComponent() {
               </Popover>
             </div>
 
-            <Button type="submit" className="mt-2" disabled={!selectedUserId}>
+            <Button type="submit" className="mt-2" disabled={!selectedUserId || !selectedCity}>
               Create Project
             </Button>
           </form>
