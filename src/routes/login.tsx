@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
-import { login } from '#/lib/auth'
+import { saveSession } from '#/lib/auth'
+import { $login } from '#/server/auth'
 import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
@@ -16,17 +17,23 @@ function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
     setLoading(true)
-    const user = login(username.trim(), password)
-    setLoading(false)
-    if (!user) {
-      setError('Invalid username or password')
-      return
+    try {
+      const user = await $login({ data: { username: username.trim(), password } })
+      if (!user) {
+        setError('Invalid username or password')
+        return
+      }
+      saveSession(user)
+      navigate({ to: '/' })
+    } catch {
+      setError('Login failed. Please try again.')
+    } finally {
+      setLoading(false)
     }
-    navigate({ to: '/' })
   }
 
   return (
@@ -35,14 +42,12 @@ function LoginPage() {
         className="island-shell rounded-2xl p-10 w-full max-w-sm flex flex-col items-center gap-6"
         style={{ border: '1.5px solid rgba(0,0,0,0.1)' }}
       >
-        {/* Logo */}
         <img
           src="/images/origin-logo.png"
           alt="Origin UPVC"
           className="h-20 w-auto object-contain"
         />
 
-        {/* Heading */}
         <div className="text-center">
           <h1
             className="text-xl font-bold tracking-tight"
@@ -53,7 +58,6 @@ function LoginPage() {
           <p className="text-sm text-muted-foreground mt-1">Sign in to your account</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="username">Username</Label>

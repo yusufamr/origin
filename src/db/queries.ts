@@ -1,7 +1,7 @@
-import { eq, count } from "drizzle-orm";
+import { eq, count, and } from "drizzle-orm";
 import { db } from ".";
-import { clients, projects, windows } from ".";
-import type { NewClient, NewProject, NewWindow } from ".";
+import { clients, projects, windows, users } from ".";
+import type { NewClient, NewProject, NewWindow, NewUser } from ".";
 
 // ── Clients ─────────────────────────────────────────────────────────────────
 
@@ -56,6 +56,37 @@ export function listProjectsByClient(clientId: number) {
 
 export function createProject(data: NewProject) {
   return db.insert(projects).values(data).returning();
+}
+
+// ── Users ──────────────────────────────────────────────────────────────────
+
+export function findUserByCredentials(username: string, password: string) {
+  return db.query.users.findFirst({
+    where: and(eq(users.username, username), eq(users.password, password)),
+  })
+}
+
+export function findUserByUsername(username: string) {
+  return db.query.users.findFirst({
+    where: eq(users.username, username),
+  })
+}
+
+export function listUsers() {
+  return db.select({ id: users.id, username: users.username, role: users.role, displayName: users.displayName })
+    .from(users)
+}
+
+export function createUser(data: NewUser) {
+  return db.insert(users).values(data).returning()
+}
+
+export function deleteUserById(id: number) {
+  return db.delete(users).where(eq(users.id, id))
+}
+
+export function countUsers() {
+  return db.select({ count: count() }).from(users)
 }
 
 // ── Windows ────────────────────────────────────────────────────────────────

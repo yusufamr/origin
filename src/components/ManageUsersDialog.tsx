@@ -8,7 +8,10 @@ import {
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Button } from '#/components/ui/button'
-import { getAllUsers, addUser, deleteUser, type Role } from '#/lib/auth'
+import type { Role } from '#/lib/auth'
+import { $listUsers, $addUser, $deleteUser } from '#/server/auth'
+
+type UserRow = { id: number; username: string; role: string; displayName: string }
 
 interface ManageUsersDialogProps {
   open: boolean
@@ -21,36 +24,40 @@ export function ManageUsersDialog({
   onOpenChange,
   currentUserId,
 }: ManageUsersDialogProps) {
-  const [users, setUsers] = useState(() => getAllUsers())
+  const [users, setUsers] = useState<UserRow[]>([])
   const [displayName, setDisplayName] = useState('')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('employee')
   const [error, setError] = useState('')
 
-  function handleOpenChange(next: boolean) {
-    if (next) setUsers(getAllUsers())
+  async function handleOpenChange(next: boolean) {
+    if (next) {
+      const data = await $listUsers()
+      setUsers(data)
+    }
     onOpenChange(next)
   }
 
-  function handleAddUser(e: React.FormEvent) {
+  async function handleAddUser(e: React.FormEvent) {
     e.preventDefault()
     setError('')
-    const result = addUser(username.trim(), password, role, displayName.trim())
-    if (!result.ok) {
-      setError(result.error)
-      return
+    try {
+      await $addUser({ data: { username: username.trim(), password, role, displayName: displayName.trim() } })
+      setDisplayName('')
+      setUsername('')
+      setPassword('')
+      setRole('employee')
+      const data = await $listUsers()
+      setUsers(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add user')
     }
-    setDisplayName('')
-    setUsername('')
-    setPassword('')
-    setRole('employee')
-    setUsers(getAllUsers())
   }
 
-  function handleDeleteUser(id: string) {
-    deleteUser(id)
-    setUsers(getAllUsers())
+  async function handleDeleteUser(id: number) {
+    await $deleteUser({ data: id })
+    setUsers((prev) => prev.filter((u) => u.id !== id))
   }
 
   return (
@@ -72,7 +79,7 @@ export function ManageUsersDialog({
                   @{u.username} · {u.role}
                 </span>
               </div>
-              {u.id !== currentUserId && (
+              {String(u.id) !== currentUserId && (
                 <Button
                   variant="ghost"
                   size="sm"
@@ -93,9 +100,7 @@ export function ManageUsersDialog({
           <p className="text-sm font-medium">Add New User</p>
           <div className="flex gap-2">
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor="newDisplayName" className="text-xs">
-                Display Name
-              </Label>
+              <Label htmlFor="newDisplayName" className="text-xs">Display Name</Label>
               <Input
                 id="newDisplayName"
                 placeholder="Full name"
@@ -105,9 +110,7 @@ export function ManageUsersDialog({
               />
             </div>
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor="newUsername" className="text-xs">
-                Username
-              </Label>
+              <Label htmlFor="newUsername" className="text-xs">Username</Label>
               <Input
                 id="newUsername"
                 placeholder="username"
@@ -119,9 +122,7 @@ export function ManageUsersDialog({
           </div>
           <div className="flex gap-2">
             <div className="flex flex-1 flex-col gap-1">
-              <Label htmlFor="newPassword" className="text-xs">
-                Password
-              </Label>
+              <Label htmlFor="newPassword" className="text-xs">Password</Label>
               <Input
                 id="newPassword"
                 type="password"
@@ -153,9 +154,7 @@ export function ManageUsersDialog({
             </div>
           </div>
           {error && <p className="text-xs text-destructive">{error}</p>}
-          <Button type="submit" size="sm">
-            Add User
-          </Button>
+          <Button type="submit" size="sm">Add User</Button>
         </form>
       </DialogContent>
     </Dialog>
