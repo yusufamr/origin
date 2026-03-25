@@ -27,6 +27,8 @@ export function listProjects() {
       id: projects.id,
       name: projects.name,
       address: projects.address,
+      city: projects.city,
+      status: projects.status,
       createdAt: projects.createdAt,
       clientFirstName: clients.firstName,
       clientLastName: clients.lastName,

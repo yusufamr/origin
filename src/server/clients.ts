@@ -13,7 +13,7 @@ export const $findClientByPhone = createServerFn()
   })
 
 export const $createClient = createServerFn({ method: 'POST' })
-  .inputValidator((data: Pick<NewClient, 'firstName' | 'lastName' | 'phone'>) => data)
+  .inputValidator((data: Pick<NewClient, 'firstName' | 'lastName' | 'phone' | 'phone2'>) => data)
   .handler(async ({ data }) => {
     const [client] = await createClient(data)
     return client

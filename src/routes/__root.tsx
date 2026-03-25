@@ -5,6 +5,9 @@ import {
   redirect,
   useNavigate,
   useRouterState,
+  useRouter,
+  Scripts,
+  HeadContent,
 } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Check, ChevronsUpDown, LogOut, Users } from 'lucide-react'
@@ -39,6 +42,8 @@ import {
   deleteUser,
   type Role,
 } from '#/lib/auth'
+import { $listClients, $createClient } from '#/server/clients'
+import { $createProject } from '#/server/projects'
 
 import '../styles.css'
 
@@ -53,18 +58,29 @@ export const Route = createRootRoute({
       throw redirect({ to: '/login' })
     }
   },
-  component: RootComponent,
+  component: RootDocument,
 })
 
-// Placeholder until server functions are wired up
-const mockClients = [
-  { id: 1, firstName: 'Ahmed', lastName: 'Hassan', phone: '+201001234567' },
-  { id: 2, firstName: 'Sara', lastName: 'Ali', phone: '+201112345678' },
-  { id: 3, firstName: 'Mohamed', lastName: 'Khaled', phone: '+201223456789' },
-]
+function RootDocument() {
+  return (
+    <html lang="en">
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Origin</title>
+        <HeadContent />
+      </head>
+      <body>
+        <AppShell />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
 
-function RootComponent() {
+function AppShell() {
   const navigate = useNavigate()
+  const router = useRouter()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const session = getSession()
 
@@ -73,13 +89,26 @@ function RootComponent() {
   const [projectOpen, setProjectOpen] = useState(false)
   const [usersOpen, setUsersOpen] = useState(false)
 
+  // ── Clients list (loaded when project dialog opens) ────────────────────────
+  const [dbClients, setDbClients] = useState<{ id: number; firstName: string; lastName: string; phone: string }[]>([])
+
+  // ── New Client form state ──────────────────────────────────────────────────
+  const [clientFirstName, setClientFirstName] = useState('')
+  const [clientLastName, setClientLastName] = useState('')
+  const [clientPhone, setClientPhone] = useState('')
+  const [clientPhone2, setClientPhone2] = useState('')
+  const [clientError, setClientError] = useState('')
+
   // ── New Project form state ─────────────────────────────────────────────────
+  const [projectName, setProjectName] = useState('')
+  const [projectAddress, setProjectAddress] = useState('')
   const [comboOpen, setComboOpen] = useState(false)
   const [statusOpen, setStatusOpen] = useState(false)
   const [cityOpen, setCityOpen] = useState(false)
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [selectedStatus, setSelectedStatus] = useState<'sent' | 'done' | null>(null)
   const [selectedCity, setSelectedCity] = useState<'cairo' | 'alex' | 'giza' | null>(null)
+  const [projectError, setProjectError] = useState('')
 
   // ── Manage Users form state ────────────────────────────────────────────────
   const [newUsername, setNewUsername] = useState('')
@@ -89,7 +118,7 @@ function RootComponent() {
   const [userError, setUserError] = useState('')
   const [users, setUsers] = useState(() => getAllUsers())
 
-  const selectedClient = mockClients.find((c) => c.id === selectedClientId)
+  const selectedClient = dbClients.find((c) => c.id === selectedClientId)
 
   const statuses = [
     { value: 'sent' as const, label: 'Sent' },
@@ -105,6 +134,61 @@ function RootComponent() {
   function handleLogout() {
     logout()
     navigate({ to: '/login' })
+  }
+
+  async function handleOpenProjectDialog() {
+    setProjectOpen(true)
+    const clients = await $listClients()
+    setDbClients(clients)
+  }
+
+  async function handleCreateClient(e: React.FormEvent) {
+    e.preventDefault()
+    setClientError('')
+    try {
+      await $createClient({
+        data: {
+          firstName: clientFirstName.trim(),
+          lastName: clientLastName.trim(),
+          phone: clientPhone.trim(),
+          phone2: clientPhone2.trim() || null,
+        },
+      })
+      setClientFirstName('')
+      setClientLastName('')
+      setClientPhone('')
+      setClientPhone2('')
+      setClientOpen(false)
+      router.invalidate()
+    } catch (err) {
+      setClientError(err instanceof Error ? err.message : 'Failed to create client')
+    }
+  }
+
+  async function handleCreateProject(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedClientId || !selectedCity) return
+    setProjectError('')
+    try {
+      await $createProject({
+        data: {
+          clientId: selectedClientId,
+          name: projectName.trim(),
+          address: projectAddress.trim(),
+          city: selectedCity,
+          status: selectedStatus ?? 'sent',
+        },
+      })
+      setProjectName('')
+      setProjectAddress('')
+      setSelectedClientId(null)
+      setSelectedStatus(null)
+      setSelectedCity(null)
+      setProjectOpen(false)
+      router.invalidate()
+    } catch (err) {
+      setProjectError(err instanceof Error ? err.message : 'Failed to create project')
+    }
   }
 
   function handleAddUser(e: React.FormEvent) {
@@ -145,7 +229,7 @@ function RootComponent() {
         </Link>
 
         <Button onClick={() => setClientOpen(true)}>New Client</Button>
-        <Button onClick={() => setProjectOpen(true)}>New Project</Button>
+        <Button onClick={handleOpenProjectDialog}>New Project</Button>
 
         {/* Admin-only: manage users */}
         {isAdmin && (
@@ -186,23 +270,49 @@ function RootComponent() {
           <DialogHeader>
             <DialogTitle>Create New Client</DialogTitle>
           </DialogHeader>
-          <form className="flex flex-col gap-4 pt-2">
+          <form onSubmit={handleCreateClient} className="flex flex-col gap-4 pt-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="firstName">First Name</Label>
-              <Input id="firstName" placeholder="John" />
+              <Input
+                id="firstName"
+                placeholder="John"
+                value={clientFirstName}
+                onChange={(e) => setClientFirstName(e.target.value)}
+                required
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="lastName">Last Name</Label>
-              <Input id="lastName" placeholder="Doe" />
+              <Input
+                id="lastName"
+                placeholder="Doe"
+                value={clientLastName}
+                onChange={(e) => setClientLastName(e.target.value)}
+                required
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="phone">Phone Number</Label>
-              <Input id="phone" type="tel" placeholder="+1234567890" />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="+1234567890"
+                value={clientPhone}
+                onChange={(e) => setClientPhone(e.target.value)}
+                required
+              />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="phone2">Phone Number 2 <span className="text-muted-foreground">(optional)</span></Label>
-              <Input id="phone2" type="tel" placeholder="+1234567890" />
+              <Input
+                id="phone2"
+                type="tel"
+                placeholder="+1234567890"
+                value={clientPhone2}
+                onChange={(e) => setClientPhone2(e.target.value)}
+              />
             </div>
+            {clientError && <p className="text-xs text-destructive">{clientError}</p>}
             <Button type="submit" className="mt-2">Create Client</Button>
           </form>
         </DialogContent>
@@ -214,15 +324,27 @@ function RootComponent() {
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
           </DialogHeader>
-          <form className="flex flex-col gap-4 pt-2">
+          <form onSubmit={handleCreateProject} className="flex flex-col gap-4 pt-2">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="projectName">Project Name</Label>
-              <Input id="projectName" placeholder="e.g. Villa North Wing" />
+              <Input
+                id="projectName"
+                placeholder="e.g. Villa North Wing"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                required
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="address">Address</Label>
-              <Input id="address" placeholder="e.g. 12 Nile St, Cairo" />
+              <Input
+                id="address"
+                placeholder="e.g. 12 Nile St, Cairo"
+                value={projectAddress}
+                onChange={(e) => setProjectAddress(e.target.value)}
+                required
+              />
             </div>
 
             <div className="flex gap-3">
@@ -339,7 +461,7 @@ function RootComponent() {
                     <CommandList>
                       <CommandEmpty>No clients found.</CommandEmpty>
                       <CommandGroup>
-                        {mockClients.map((c) => (
+                        {dbClients.map((c) => (
                           <CommandItem
                             key={c.id}
                             value={`${c.firstName} ${c.lastName} ${c.phone}`}
@@ -369,6 +491,7 @@ function RootComponent() {
               </Popover>
             </div>
 
+            {projectError && <p className="text-xs text-destructive">{projectError}</p>}
             <Button type="submit" className="mt-2" disabled={!selectedClientId || !selectedCity}>
               Create Project
             </Button>
