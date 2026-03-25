@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -31,13 +31,12 @@ export function ManageUsersDialog({
   const [role, setRole] = useState<Role>('employee')
   const [error, setError] = useState('')
 
-  async function handleOpenChange(next: boolean) {
-    if (next) {
-      const data = await $listUsers()
-      setUsers(data)
+  // Fetch users whenever the dialog opens
+  useEffect(() => {
+    if (open) {
+      $listUsers().then(setUsers)
     }
-    onOpenChange(next)
-  }
+  }, [open])
 
   async function handleAddUser(e: React.FormEvent) {
     e.preventDefault()
@@ -61,7 +60,7 @@ export function ManageUsersDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Manage Users</DialogTitle>

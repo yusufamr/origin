@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from '@tanstack/react-router'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import {
@@ -9,7 +9,7 @@ import {
 } from '#/components/ui/dialog'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
-import { Button } from '#/components/ui/button'
+import { Button, buttonVariants } from '#/components/ui/button'
 import {
   Popover,
   PopoverContent,
@@ -59,13 +59,12 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
   const [cityOpen, setCityOpen] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleOpenChange(next: boolean) {
-    if (next) {
-      const data = await $listClients()
-      setClients(data)
+  // Fetch clients whenever the dialog opens
+  useEffect(() => {
+    if (open) {
+      $listClients().then(setClients)
     }
-    onOpenChange(next)
-  }
+  }, [open])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -95,8 +94,13 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
 
   const selectedClient = clients.find((c) => c.id === selectedClientId)
 
+  const triggerClass = cn(
+    buttonVariants({ variant: 'outline' }),
+    'w-full justify-between font-normal',
+  )
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Create New Project</DialogTitle>
@@ -125,21 +129,19 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
           </div>
 
           <div className="flex gap-3">
+            {/* Status */}
             <div className="flex flex-1 flex-col gap-1.5">
               <Label>Status</Label>
               <Popover open={statusOpen} onOpenChange={setStatusOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={statusOpen}
-                    className="w-full justify-between font-normal"
-                  >
-                    {selectedStatus
-                      ? STATUSES.find((s) => s.value === selectedStatus)?.label
-                      : 'Select status...'}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
+                <PopoverTrigger
+                  className={triggerClass}
+                  role="combobox"
+                  aria-expanded={statusOpen}
+                >
+                  {selectedStatus
+                    ? STATUSES.find((s) => s.value === selectedStatus)?.label
+                    : 'Select status...'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </PopoverTrigger>
                 <PopoverContent className="w-40 p-0" align="start">
                   <Command>
@@ -170,21 +172,19 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               </Popover>
             </div>
 
+            {/* City */}
             <div className="flex flex-1 flex-col gap-1.5">
               <Label>City</Label>
               <Popover open={cityOpen} onOpenChange={setCityOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={cityOpen}
-                    className="w-full justify-between font-normal"
-                  >
-                    {selectedCity
-                      ? CITIES.find((c) => c.value === selectedCity)?.label
-                      : 'Select city...'}
-                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
+                <PopoverTrigger
+                  className={triggerClass}
+                  role="combobox"
+                  aria-expanded={cityOpen}
+                >
+                  {selectedCity
+                    ? CITIES.find((c) => c.value === selectedCity)?.label
+                    : 'Select city...'}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </PopoverTrigger>
                 <PopoverContent className="w-44 p-0" align="start">
                   <Command>
@@ -216,21 +216,19 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             </div>
           </div>
 
+          {/* Client */}
           <div className="flex flex-col gap-1.5">
             <Label>Assign to Client</Label>
             <Popover open={comboOpen} onOpenChange={setComboOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={comboOpen}
-                  className="w-full justify-between font-normal"
-                >
-                  {selectedClient
-                    ? `${selectedClient.firstName} ${selectedClient.lastName} — ${selectedClient.phone}`
-                    : 'Select a client...'}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
+              <PopoverTrigger
+                className={cn(triggerClass, 'w-full')}
+                role="combobox"
+                aria-expanded={comboOpen}
+              >
+                {selectedClient
+                  ? `${selectedClient.firstName} ${selectedClient.lastName} — ${selectedClient.phone}`
+                  : 'Select a client...'}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </PopoverTrigger>
               <PopoverContent className="w-full p-0" align="start">
                 <Command>
