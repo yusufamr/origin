@@ -24,6 +24,7 @@ interface Project {
   status: 'sent' | 'done'
   windowCount: number
   createdAt: string
+  createdBy: string
 }
 
 interface ProjectsTableProps {
@@ -49,6 +50,7 @@ export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
             <TableHead>Status</TableHead>
             <TableHead className="text-center">Windows</TableHead>
             <TableHead>Created</TableHead>
+            <TableHead>Created By</TableHead>
             {isAdmin && <TableHead />}
           </TableRow>
         </TableHeader>
@@ -74,6 +76,7 @@ export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
               </TableCell>
               <TableCell className="text-center text-[var(--sea-ink-soft)]">{project.windowCount}</TableCell>
               <TableCell className="text-[var(--sea-ink-soft)]">{project.createdAt}</TableCell>
+              <TableCell className="text-[var(--sea-ink-soft)]">{project.createdBy}</TableCell>
               {isAdmin && (
                 <TableCell onClick={(e) => e.stopPropagation()}>
                   <Button

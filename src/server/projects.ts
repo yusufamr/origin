@@ -13,7 +13,7 @@ export const $getProjectById = createServerFn()
   })
 
 export const $createProject = createServerFn({ method: 'POST' })
-  .inputValidator((data: Pick<NewProject, 'clientId' | 'name' | 'address' | 'city' | 'status'>) => data)
+  .inputValidator((data: Pick<NewProject, 'clientId' | 'userId' | 'name' | 'address' | 'city' | 'status'>) => data)
   .handler(async ({ data }) => {
     const [project] = await createProject(data)
     return project

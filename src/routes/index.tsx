@@ -21,6 +21,7 @@ function HomePage() {
     status: (p.status ?? 'sent') as 'sent' | 'done',
     windowCount: p.windowCount,
     createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '',
+    createdBy: p.createdBy ?? '',
   }))
 
   return (

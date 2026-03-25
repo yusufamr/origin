@@ -26,6 +26,7 @@ import {
 import { cn } from '#/lib/utils'
 import { $createProject } from '#/server/projects'
 import { $listClients } from '#/server/clients'
+import { getSession } from '#/lib/auth'
 
 type Client = { id: number; firstName: string; lastName: string; phone: string }
 
@@ -71,9 +72,11 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
     if (!selectedClientId || !selectedCity) return
     setError('')
     try {
+      const session = getSession()
       await $createProject({
         data: {
           clientId: selectedClientId,
+          userId: session?.id ? Number(session.id) : null,
           name: name.trim(),
           address: address.trim(),
           city: selectedCity,

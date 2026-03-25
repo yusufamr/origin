@@ -35,11 +35,13 @@ export function listProjects() {
       clientPhone: clients.phone,
       clientPhone2: clients.phone2,
       windowCount: count(windows.id),
+      createdBy: users.displayName,
     })
     .from(projects)
     .leftJoin(clients, eq(projects.clientId, clients.id))
     .leftJoin(windows, eq(windows.projectId, projects.id))
-    .groupBy(projects.id, clients.id);
+    .leftJoin(users, eq(projects.userId, users.id))
+    .groupBy(projects.id, clients.id, users.id);
 }
 
 export function getProjectById(id: number) {
