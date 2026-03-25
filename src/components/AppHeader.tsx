@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Users, LogOut } from 'lucide-react'
+import { Users, LogOut, LayoutDashboard } from 'lucide-react'
 import { Button } from '#/components/ui/button'
 import type { getSession } from '#/lib/auth'
 
@@ -33,10 +33,18 @@ export function AppHeader({
       <Button onClick={onNewProject}>New Project</Button>
 
       {isAdmin && (
-        <Button variant="outline" onClick={onManageUsers}>
-          <Users className="h-4 w-4 mr-1.5" />
-          Manage Users
-        </Button>
+        <>
+          <Link to="/dashboard">
+            <Button variant="ghost">
+              <LayoutDashboard className="h-4 w-4 mr-1.5" />
+              Dashboard
+            </Button>
+          </Link>
+          <Button variant="outline" onClick={onManageUsers}>
+            <Users className="h-4 w-4 mr-1.5" />
+            Manage Users
+          </Button>
+        </>
       )}
 
       <div className="flex-1" />

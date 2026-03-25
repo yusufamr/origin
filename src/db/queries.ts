@@ -1,4 +1,4 @@
-import { eq, count, and } from "drizzle-orm";
+import { eq, count, and, desc, sql } from "drizzle-orm";
 import { db } from ".";
 import { clients, projects, windows, users } from ".";
 import type { NewClient, NewProject, NewWindow, NewUser } from ".";
@@ -89,6 +89,42 @@ export function deleteUserById(id: number) {
 
 export function countUsers() {
   return db.select({ count: count() }).from(users)
+}
+
+export function getProjectStatsByUser(
+  year: number,
+  month: number | null,
+  status: 'sent' | 'done' | null,
+) {
+  const conditions = [
+    sql`EXTRACT(YEAR FROM ${projects.createdAt}) = ${year}`,
+  ]
+  if (month !== null) {
+    conditions.push(sql`EXTRACT(MONTH FROM ${projects.createdAt}) = ${month}`)
+  }
+  if (status !== null) {
+    conditions.push(eq(projects.status, status))
+  }
+
+  return db
+    .select({
+      userId: users.id,
+      userName: users.displayName,
+      count: count(projects.id),
+    })
+    .from(projects)
+    .leftJoin(users, eq(projects.userId, users.id))
+    .where(and(...conditions))
+    .groupBy(users.id, users.displayName)
+    .orderBy(desc(count(projects.id)))
+}
+
+export function getProjectYears() {
+  return db
+    .select({ year: sql<number>`EXTRACT(YEAR FROM ${projects.createdAt})::int` })
+    .from(projects)
+    .groupBy(sql`EXTRACT(YEAR FROM ${projects.createdAt})::int`)
+    .orderBy(desc(sql`EXTRACT(YEAR FROM ${projects.createdAt})::int`))
 }
 
 // ── Windows ────────────────────────────────────────────────────────────────
