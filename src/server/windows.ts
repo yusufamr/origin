@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { listWindowsByProject, createWindow } from '#/db/queries'
+import { listWindowsByProject, createWindow, updateWindow } from '#/db/queries'
 import type { NewWindow } from '#/db'
 
 export const $listWindowsByProject = createServerFn()
@@ -12,5 +12,12 @@ export const $createWindow = createServerFn({ method: 'POST' })
   .inputValidator((data: Omit<NewWindow, 'id'>) => data)
   .handler(async ({ data }) => {
     const [window] = await createWindow(data)
+    return window
+  })
+
+export const $updateWindow = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: number } & Partial<Omit<NewWindow, 'id' | 'projectId'>>) => data)
+  .handler(async ({ data: { id, ...fields } }) => {
+    const [window] = await updateWindow(id, fields)
     return window
   })

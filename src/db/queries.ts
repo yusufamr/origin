@@ -140,3 +140,7 @@ export function listWindowsByProject(projectId: number) {
 export function createWindow(data: NewWindow) {
   return db.insert(windows).values(data).returning();
 }
+
+export function updateWindow(id: number, data: Partial<Omit<NewWindow, 'id' | 'projectId'>>) {
+  return db.update(windows).set(data).where(eq(windows.id, id)).returning();
+}

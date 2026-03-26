@@ -1,28 +1,29 @@
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '#/components/ui/button'
-import { WindowGrid } from '#/components/windows/WindowGrid'
+import { WindowsTable } from '#/components/windows/WindowsTable'
 import { StatusBadge } from '#/components/projects/StatusBadge'
 import { $getProjectById, $updateProjectStatus } from '#/server/projects'
+import { $listWindowsByProject } from '#/server/windows'
 
 export const Route = createFileRoute('/projects/$projectId')({
   loader: async ({ params }) => {
-    return await $getProjectById({ data: Number(params.projectId) })
+    const projectId = Number(params.projectId)
+    const [project, windows] = await Promise.all([
+      $getProjectById({ data: projectId }),
+      $listWindowsByProject({ data: projectId }),
+    ])
+    return { project, windows }
   },
   component: ProjectPage,
 })
 
-// Placeholder until server functions are wired up
-const mockWindows = [
-  { id: 1, type: 'Sliding', subtype: 'Double', category: 'Residential', width: 1.2, totalHeight: 1.5, count: 3, color: 'White', totalPrice: 4500 },
-  { id: 2, type: 'Fixed', subtype: 'Single', category: 'Commercial', width: 0.9, totalHeight: 1.2, count: 2, color: 'Black', totalPrice: 2800 },
-]
-
 function ProjectPage() {
   const { projectId } = Route.useParams()
-  const project = Route.useLoaderData()
+  const { project, windows } = Route.useLoaderData()
   const router = useRouter()
   const [updating, setUpdating] = useState(false)
+  const [addingWindow, setAddingWindow] = useState(false)
 
   async function toggleStatus() {
     if (!project) return
@@ -34,6 +35,11 @@ function ProjectPage() {
     } finally {
       setUpdating(false)
     }
+  }
+
+  function handleWindowAdded() {
+    setAddingWindow(false)
+    router.invalidate()
   }
 
   return (
@@ -58,16 +64,24 @@ function ProjectPage() {
               Mark as {project.status === 'done' ? 'Sent' : 'Done'}
             </Button>
           )}
-          <Button>Add Window</Button>
+          <Button onClick={() => setAddingWindow(true)} disabled={addingWindow}>
+            Add Window
+          </Button>
         </div>
       </div>
 
-      {mockWindows.length === 0 ? (
+      {windows.length === 0 && !addingWindow ? (
         <p className="text-[var(--sea-ink-soft)]">
           No windows yet. Click <strong>Add Window</strong> to get started.
         </p>
       ) : (
-        <WindowGrid windows={mockWindows} />
+        <WindowsTable
+          windows={windows}
+          projectId={Number(projectId)}
+          isAdding={addingWindow}
+          onCancel={() => setAddingWindow(false)}
+          onWindowAdded={handleWindowAdded}
+        />
       )}
     </main>
   )
