@@ -12,6 +12,80 @@ import { Button } from '#/components/ui/button'
 import { $createWindow, $updateWindow } from '#/server/windows'
 import type { Window } from '#/db'
 
+const WINDOW_TYPES = ['دائره', 'جرار', 'مفصلي', 'قلاب', 'مفصلي قلاب', 'ثابت', 'أبواب'] as const
+
+type WindowType = typeof WINDOW_TYPES[number]
+
+const SUBTYPES: Record<WindowType, string[]> = {
+  'جرار': ['جرار 2 ضلفه', 'جرار 3 ضلفه', 'جرار 4 ضلفه'],
+  'مفصلي': ['مفصلي 1 ضلفه', 'مفصلي 2 ضلفه'],
+  'قلاب': ['قلاب'],
+  'مفصلي قلاب': ['مفصلي قلاب'],
+  'ثابت': ['ثابت'],
+  'دائره': ['دائره'],
+  'أبواب': ['أبواب'],
+}
+
+const CATEGORIES: Record<string, string[]> = {
+  'جرار 2 ضلفه': [
+    'جرار 2 ضلفه',
+    'جرار 2 ضلفه ثابت من اعلى',
+    'جرار 2 ضلفه ثابت من اسفل',
+    'جرار 2 ضلفه ثابت من الجوانب',
+    'جرار 2 ضلفه ثابت من اعلى و من الجنب',
+    'جرار 2 ضلفه ثابت من اسفل و من الجنب',
+    'جرار 2 ضلفه و أرش',
+    'جرار 2 ضلفه و أرش و ثابت من اسفل',
+  ],
+  'جرار 3 ضلفه': [
+    'جرار 3 ضلفه',
+    'جرار 3 ضلفه و ثابت من اسفل',
+    'جرار 3 ضلفه و ثابت من اعلى',
+    'جرار 3 ضلفه و ارش',
+  ],
+  'جرار 4 ضلفه': [
+    'جرار 4 ضلفه',
+    'جرار 4 ضلفه و ارش',
+    'جرار 4 ضلفه و ثابت من اسفل',
+    'جرار 4 ضلفه و ثابت من اعلى',
+  ],
+  'مفصلي 1 ضلفه': [
+    'مفصلي 1 ضلفه',
+    'مفصلي 1 ضلفه و ثابت من اعلى',
+    'مفصلي 1 ضلفه و ثابت من الجانبين',
+    'مفصلي 1 ضلفه و ارش',
+  ],
+  'مفصلي 2 ضلفه': [
+    'مفصلي 2 ضلفه',
+    'مفصلي 2 ضلفه و ثابت من اعلى',
+    'مفصلي 2 ضلفه و ثابت من اسفل',
+    'مفصلي 2 ضلفه و ثابت من الجانبين',
+    'مفصلي 2 ضلفه و ثابت من الجانبين و الأعلى',
+    'مفصلي 2 ضلفه و ثابت من اعلى و اسفل',
+    'مفصلي 2 ضلفه و ثابت فوق و تحت',
+    'مفصلي 2 ضلفه و ارش',
+    'مفصلي 2 ضلفه و ارش و ثابت من اسفل',
+  ],
+  'قلاب': [
+    'قلاب',
+    'قلاب و ثابت من اعلى',
+    'قلاب و ثابت من الجانبين',
+    'قلاب و ارش',
+  ],
+  'مفصلي قلاب': [
+    'مفصلي قلاب',
+    'مفصلي قلاب و ثابت من اعلى',
+    'مفصلي قلاب و ثابت من اسفل',
+    'مفصلي قلاب و ارش',
+  ],
+  'ثابت': ['ثابت'],
+  'دائره': ['دائره'],
+  'أبواب': ['أبواب'],
+}
+
+const selectClass =
+  'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 md:text-sm dark:bg-input/30'
+
 interface WindowsTableProps {
   windows: Window[]
   projectId: number
@@ -83,16 +157,55 @@ function RowInputs({
   row: RowFields
   onChange: (field: keyof RowFields, value: string | boolean) => void
 }) {
+  const subtypeOptions = row.type in SUBTYPES ? SUBTYPES[row.type as WindowType] : []
+  const categoryOptions = row.subtype in CATEGORIES ? CATEGORIES[row.subtype] : []
+
   return (
     <>
       <TableCell>
-        <Input value={row.type} onChange={e => onChange('type', e.target.value)} placeholder="Type" className="min-w-[90px]" />
+        <select
+          value={row.type}
+          onChange={e => {
+            onChange('type', e.target.value)
+            onChange('subtype', '')
+            onChange('category', '')
+          }}
+          className={`${selectClass} min-w-[110px]`}
+        >
+          <option value="">-- اختر --</option>
+          {WINDOW_TYPES.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
       </TableCell>
       <TableCell>
-        <Input value={row.subtype} onChange={e => onChange('subtype', e.target.value)} placeholder="Subtype" className="min-w-[90px]" />
+        <select
+          value={row.subtype}
+          onChange={e => {
+            onChange('subtype', e.target.value)
+            onChange('category', '')
+          }}
+          className={`${selectClass} min-w-[150px]`}
+          disabled={subtypeOptions.length === 0}
+        >
+          <option value="">-- اختر --</option>
+          {subtypeOptions.map(s => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
       </TableCell>
       <TableCell>
-        <Input value={row.category} onChange={e => onChange('category', e.target.value)} placeholder="Category" className="min-w-[90px]" />
+        <select
+          value={row.category}
+          onChange={e => onChange('category', e.target.value)}
+          className={`${selectClass} min-w-[200px]`}
+          disabled={categoryOptions.length === 0}
+        >
+          <option value="">-- اختر --</option>
+          {categoryOptions.map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
       </TableCell>
       <TableCell>
         <Input type="number" value={row.width} onChange={e => onChange('width', e.target.value)} placeholder="0.00" className="min-w-[70px]" />
