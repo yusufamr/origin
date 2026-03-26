@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useRef } from 'react'
 import {
   Table,
   TableBody,
@@ -12,6 +13,17 @@ import { PhoneCell } from '#/components/shared/PhoneCell'
 import { getSession } from '#/lib/auth'
 import { Trash2 } from 'lucide-react'
 import { Button } from '#/components/ui/button'
+
+function useDoubleTap(onDoubleTap: () => void) {
+  const lastTap = useRef<number>(0)
+  return () => {
+    const now = Date.now()
+    if (now - lastTap.current < 300) {
+      onDoubleTap()
+    }
+    lastTap.current = now
+  }
+}
 
 interface Project {
   id: number
@@ -32,8 +44,60 @@ interface ProjectsTableProps {
   onDelete?: (id: number) => void
 }
 
-export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
+function ProjectRow({
+  project,
+  isAdmin,
+  onDelete,
+}: {
+  project: Project
+
+  isAdmin: boolean
+  onDelete?: (id: number) => void
+}) {
   const navigate = useNavigate()
+  const handleDoubleTap = useDoubleTap(() =>
+    navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+  )
+
+  return (
+    <TableRow
+      className="cursor-pointer"
+      onDoubleClick={() =>
+        navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+      }
+      onTouchEnd={handleDoubleTap}
+    >
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.id}</TableCell>
+      <TableCell className="font-medium text-[var(--sea-ink)]">{project.name}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.address}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.city}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.client}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">
+        <PhoneCell phone={project.clientPhone} phone2={project.clientPhone2} />
+      </TableCell>
+      <TableCell>
+        <StatusBadge status={project.status} />
+      </TableCell>
+      <TableCell className="text-center text-[var(--sea-ink-soft)]">{project.windowCount}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.createdAt}</TableCell>
+      <TableCell className="text-[var(--sea-ink-soft)]">{project.createdBy}</TableCell>
+      {isAdmin && (
+        <TableCell onClick={(e) => e.stopPropagation()} onTouchEnd={(e) => e.stopPropagation()}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-destructive hover:text-destructive"
+            onClick={() => onDelete?.(project.id)}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </TableCell>
+      )}
+    </TableRow>
+  )
+}
+
+export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
   const isAdmin = getSession()?.role === 'admin'
 
   return (
@@ -56,40 +120,12 @@ export function ProjectsTable({ projects, onDelete }: ProjectsTableProps) {
         </TableHeader>
         <TableBody>
           {projects.map((project) => (
-            <TableRow
+            <ProjectRow
               key={project.id}
-              className="cursor-pointer"
-              onDoubleClick={() =>
-                navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
-              }
-            >
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.id}</TableCell>
-              <TableCell className="font-medium text-[var(--sea-ink)]">{project.name}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.address}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.city}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.client}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">
-                <PhoneCell phone={project.clientPhone} phone2={project.clientPhone2} />
-              </TableCell>
-              <TableCell>
-                <StatusBadge status={project.status} />
-              </TableCell>
-              <TableCell className="text-center text-[var(--sea-ink-soft)]">{project.windowCount}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.createdAt}</TableCell>
-              <TableCell className="text-[var(--sea-ink-soft)]">{project.createdBy}</TableCell>
-              {isAdmin && (
-                <TableCell onClick={(e) => e.stopPropagation()}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => onDelete?.(project.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              )}
-            </TableRow>
+              project={project}
+              isAdmin={isAdmin}
+              onDelete={onDelete}
+            />
           ))}
         </TableBody>
       </Table>
