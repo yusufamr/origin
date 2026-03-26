@@ -2,11 +2,15 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { useState } from 'react'
 import { getSession } from '#/lib/auth'
 import { $getProjectStats } from '#/server/projects'
+import { FilterPills } from '#/components/shared/FilterPills'
+import { StatusFilter } from '#/components/shared/StatusFilter'
+import { type ProjectStatus, PERIOD_OPTIONS, getPeriodRange, getPeriodLabel } from '#/lib/periods'
+import { usePeriodFilter, MONTH_OPTIONS } from '#/lib/usePeriodFilter'
 
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-]
+// ── Route ─────────────────────────────────────────────────────────────────────
+
+const _now = new Date()
+const _defaultRange = getPeriodRange('year', _now.getFullYear(), null)
 
 export const Route = createFileRoute('/dashboard')({
   beforeLoad: () => {
@@ -14,146 +18,90 @@ export const Route = createFileRoute('/dashboard')({
     const session = getSession()
     if (!session || session.role !== 'admin') throw redirect({ to: '/' })
   },
-  loader: () => {
-    const year = new Date().getFullYear()
-    return $getProjectStats({ data: { year, month: null, status: null } })
-  },
+  loader: () =>
+    $getProjectStats({
+      data: {
+        from: _defaultRange.from.toISOString(),
+        to: _defaultRange.to.toISOString(),
+        status: null,
+      },
+    }),
   component: DashboardPage,
 })
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 function DashboardPage() {
   const initial = Route.useLoaderData()
   const currentYear = new Date().getFullYear()
 
-  const [year, setYear] = useState(currentYear)
-  const [month, setMonth] = useState<number | null>(null)
-  const [status, setStatus] = useState<'sent' | 'done' | null>(null)
+  const [status, setStatus] = useState<ProjectStatus>(null)
   const [data, setData] = useState(initial)
   const [loading, setLoading] = useState(false)
 
-  // Available years: always include current year even if no projects yet
-  const years = data.years.length > 0
-    ? data.years.includes(currentYear) ? data.years : [currentYear, ...data.years]
-    : [currentYear]
-
-  async function fetchStats(nextYear: number, nextMonth: number | null, nextStatus: 'sent' | 'done' | null) {
+  async function fetchStats({ from, to }: { from: Date; to: Date }, s = status) {
     setLoading(true)
     try {
-      const result = await $getProjectStats({ data: { year: nextYear, month: nextMonth, status: nextStatus } })
+      const result = await $getProjectStats({
+        data: { from: from.toISOString(), to: to.toISOString(), status: s },
+      })
       setData(result)
     } finally {
       setLoading(false)
     }
   }
 
-  function handleYearChange(y: number) {
-    setYear(y)
-    fetchStats(y, month, status)
-  }
+  const { period, setPeriod, customYear, setCustomYear, customMonth, setCustomMonth } =
+    usePeriodFilter({ defaultPeriod: 'year', defaultYear: currentYear, onRangeChange: fetchStats })
 
-  function handleMonthChange(m: number | null) {
-    setMonth(m)
-    fetchStats(year, m, status)
-  }
+  const years = data.years.includes(currentYear) ? data.years : [currentYear, ...data.years]
 
-  function handleStatusChange(s: 'sent' | 'done' | null) {
+  function handleStatus(s: ProjectStatus) {
     setStatus(s)
-    fetchStats(year, month, s)
+    fetchStats(getPeriodRange(period, customYear, customMonth), s)
   }
 
   const stats = data.stats
   const total = stats.reduce((sum, row) => sum + row.count, 0)
   const maxCount = Math.max(...stats.map((r) => r.count), 1)
-
-  const periodLabel = [
-    month !== null ? `${MONTHS[month - 1]} ${year}` : `${year}`,
-    status !== null ? `· ${status}` : '',
-  ].filter(Boolean).join(' ')
+  const periodLabel = getPeriodLabel(period, customYear, customMonth)
 
   return (
     <main className="p-6 max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold text-[var(--sea-ink)] mb-6">Dashboard</h1>
 
-      {/* ── Filters ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        {/* Year */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">Year</label>
-          <div className="flex gap-1">
-            {years.map((y) => (
-              <button
-                key={y}
-                onClick={() => handleYearChange(y)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                style={{
-                  background: year === y ? 'var(--lagoon)' : 'transparent',
-                  color: year === y ? '#fff' : 'var(--sea-ink)',
-                  borderColor: year === y ? 'var(--lagoon)' : 'var(--line)',
-                }}
-              >
-                {y}
-              </button>
-            ))}
-          </div>
+      {/* ── Filters ──────────────────────────────────────────────────────── */}
+      <div className="mb-8 space-y-3">
+
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="w-14 shrink-0 text-xs font-medium text-[var(--sea-ink-soft)]">Period</span>
+          <FilterPills options={PERIOD_OPTIONS} value={period} onChange={setPeriod} />
         </div>
 
-        {/* Month */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">Month</label>
-          <div className="flex flex-wrap gap-1">
-            <button
-              onClick={() => handleMonthChange(null)}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-              style={{
-                background: month === null ? 'var(--lagoon)' : 'transparent',
-                color: month === null ? '#fff' : 'var(--sea-ink)',
-                borderColor: month === null ? 'var(--lagoon)' : 'var(--line)',
-              }}
-            >
-              All
-            </button>
-            {MONTHS.map((name, i) => {
-              const m = i + 1
-              return (
-                <button
-                  key={m}
-                  onClick={() => handleMonthChange(m)}
-                  className="px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors"
-                  style={{
-                    background: month === m ? 'var(--lagoon)' : 'transparent',
-                    color: month === m ? '#fff' : 'var(--sea-ink)',
-                    borderColor: month === m ? 'var(--lagoon)' : 'var(--line)',
-                  }}
-                >
-                  {name.slice(0, 3)}
-                </button>
-              )
-            })}
+        {period === 'custom' && (
+          <div className="ml-[4.25rem] flex flex-wrap items-start gap-4 rounded-lg border border-[var(--line)] bg-[var(--sand)] px-4 py-3">
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--sea-ink-soft)]">Year</span>
+              <FilterPills
+                options={years.map((y) => ({ value: y, label: String(y) }))}
+                value={customYear}
+                onChange={setCustomYear}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--sea-ink-soft)]">Month</span>
+              <FilterPills options={MONTH_OPTIONS} value={customMonth} onChange={setCustomMonth} />
+            </div>
           </div>
-        </div>
-        {/* Status */}
-        <div className="flex flex-col gap-1">
-          <label className="text-xs text-muted-foreground font-medium">Status</label>
-          <div className="flex gap-1">
-            {([null, 'sent', 'done'] as const).map((s) => (
-              <button
-                key={s ?? 'all'}
-                onClick={() => handleStatusChange(s)}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors capitalize"
-                style={{
-                  background: status === s ? 'var(--lagoon)' : 'transparent',
-                  color: status === s ? '#fff' : 'var(--sea-ink)',
-                  borderColor: status === s ? 'var(--lagoon)' : 'var(--line)',
-                }}
-              >
-                {s === null ? 'All' : s}
-              </button>
-            ))}
-          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="w-14 shrink-0 text-xs font-medium text-[var(--sea-ink-soft)]">Status</span>
+          <StatusFilter value={status} onChange={handleStatus} />
         </div>
       </div>
 
-      {/* ── Summary card ────────────────────────────────────────────────── */}
+      {/* ── Summary card ─────────────────────────────────────────────────── */}
       <div
         className="inline-flex flex-col gap-0.5 rounded-xl px-6 py-4 mb-8 border"
         style={{ background: 'var(--sand)', borderColor: 'var(--line)' }}
@@ -166,7 +114,7 @@ function DashboardPage() {
         </span>
       </div>
 
-      {/* ── Per-user bar chart ───────────────────────────────────────────── */}
+      {/* ── Per-user bar chart ────────────────────────────────────────────── */}
       {stats.length === 0 ? (
         <p className="text-[var(--sea-ink-soft)]">No projects found for this period.</p>
       ) : (
@@ -186,27 +134,16 @@ function DashboardPage() {
               const pct = Math.round((row.count / maxCount) * 100)
               return (
                 <div key={row.userId ?? 'unknown'} className="flex items-center gap-4 px-4 py-3">
-                  {/* Name */}
-                  <span
-                    className="w-36 shrink-0 text-sm font-medium truncate"
-                    style={{ color: 'var(--sea-ink)' }}
-                  >
+                  <span className="w-36 shrink-0 text-sm font-medium truncate" style={{ color: 'var(--sea-ink)' }}>
                     {row.userName ?? 'Unknown'}
                   </span>
-
-                  {/* Bar */}
                   <div className="flex-1 rounded-full overflow-hidden h-4" style={{ background: 'var(--sand)' }}>
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{ width: `${pct}%`, background: 'var(--lagoon)' }}
                     />
                   </div>
-
-                  {/* Count */}
-                  <span
-                    className="w-8 shrink-0 text-right text-sm font-bold"
-                    style={{ color: 'var(--lagoon-deep)' }}
-                  >
+                  <span className="w-8 shrink-0 text-right text-sm font-bold" style={{ color: 'var(--lagoon-deep)' }}>
                     {row.count}
                   </span>
                 </div>

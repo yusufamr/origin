@@ -13,10 +13,10 @@ export const $getProjectById = createServerFn()
   })
 
 export const $getProjectStats = createServerFn()
-  .inputValidator((data: { year: number; month: number | null; status: 'sent' | 'done' | null }) => data)
+  .inputValidator((data: { from: string; to: string; status: 'sent' | 'done' | null }) => data)
   .handler(async ({ data }) => {
     const [stats, years] = await Promise.all([
-      getProjectStatsByUser(data.year, data.month, data.status),
+      getProjectStatsByUser(new Date(data.from), new Date(data.to), data.status),
       getProjectYears(),
     ])
     return { stats, years: years.map((r) => r.year) }

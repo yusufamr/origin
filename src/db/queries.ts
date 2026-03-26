@@ -1,4 +1,4 @@
-import { eq, count, and, desc, sql } from "drizzle-orm";
+import { eq, count, and, desc, sql, gte, lt } from "drizzle-orm";
 import { db } from ".";
 import { clients, projects, windows, users } from ".";
 import type { NewClient, NewProject, NewWindow, NewUser } from ".";
@@ -92,16 +92,14 @@ export function countUsers() {
 }
 
 export function getProjectStatsByUser(
-  year: number,
-  month: number | null,
+  from: Date,
+  to: Date,
   status: 'sent' | 'done' | null,
 ) {
   const conditions = [
-    sql`EXTRACT(YEAR FROM ${projects.createdAt}) = ${year}`,
+    gte(projects.createdAt, from),
+    lt(projects.createdAt, to),
   ]
-  if (month !== null) {
-    conditions.push(sql`EXTRACT(MONTH FROM ${projects.createdAt}) = ${month}`)
-  }
   if (status !== null) {
     conditions.push(eq(projects.status, status))
   }
