@@ -1,8 +1,14 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 import { Button } from '#/components/ui/button'
 import { WindowGrid } from '#/components/windows/WindowGrid'
+import { StatusBadge } from '#/components/projects/StatusBadge'
+import { $getProjectById, $updateProjectStatus } from '#/server/projects'
 
 export const Route = createFileRoute('/projects/$projectId')({
+  loader: async ({ params }) => {
+    return await $getProjectById({ data: Number(params.projectId) })
+  },
   component: ProjectPage,
 })
 
@@ -14,6 +20,21 @@ const mockWindows = [
 
 function ProjectPage() {
   const { projectId } = Route.useParams()
+  const project = Route.useLoaderData()
+  const router = useRouter()
+  const [updating, setUpdating] = useState(false)
+
+  async function toggleStatus() {
+    if (!project) return
+    const newStatus = project.status === 'done' ? 'sent' : 'done'
+    setUpdating(true)
+    try {
+      await $updateProjectStatus({ data: { id: project.id, status: newStatus } })
+      router.invalidate()
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   return (
     <main className="p-6">
@@ -24,11 +45,21 @@ function ProjectPage() {
               ← Back to Projects
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold text-[var(--sea-ink)]">
-            Project #{projectId}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-[var(--sea-ink)]">
+              {project?.name ?? `Project #${projectId}`}
+            </h1>
+            {project && <StatusBadge status={project.status} />}
+          </div>
         </div>
-        <Button>Add Window</Button>
+        <div className="flex items-center gap-2">
+          {project && (
+            <Button variant="outline" onClick={toggleStatus} disabled={updating}>
+              Mark as {project.status === 'done' ? 'Sent' : 'Done'}
+            </Button>
+          )}
+          <Button>Add Window</Button>
+        </div>
       </div>
 
       {mockWindows.length === 0 ? (

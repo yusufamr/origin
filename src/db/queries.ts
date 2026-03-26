@@ -60,6 +60,10 @@ export function createProject(data: NewProject) {
   return db.insert(projects).values(data).returning();
 }
 
+export function updateProjectStatus(id: number, status: 'sent' | 'done') {
+  return db.update(projects).set({ status }).where(eq(projects.id, id)).returning();
+}
+
 // ── Users ──────────────────────────────────────────────────────────────────
 
 export function findUserByCredentials(username: string, password: string) {
