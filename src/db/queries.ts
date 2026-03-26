@@ -144,3 +144,7 @@ export function createWindow(data: NewWindow) {
 export function updateWindow(id: number, data: Partial<Omit<NewWindow, 'id' | 'projectId'>>) {
   return db.update(windows).set(data).where(eq(windows.id, id)).returning();
 }
+
+export function deleteWindow(id: number) {
+  return db.delete(windows).where(eq(windows.id, id));
+}

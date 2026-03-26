@@ -9,7 +9,7 @@ import {
 } from '#/components/ui/table'
 import { Input } from '#/components/ui/input'
 import { Button } from '#/components/ui/button'
-import { $createWindow, $updateWindow } from '#/server/windows'
+import { $createWindow, $updateWindow, $deleteWindow } from '#/server/windows'
 import type { Window } from '#/db'
 
 const WINDOW_TYPES = ['دائره', 'جرار', 'مفصلي', 'قلاب', 'مفصلي قلاب', 'ثابت', 'أبواب'] as const
@@ -296,6 +296,16 @@ export function WindowsTable({
     onCancel()
   }
 
+  async function deleteWin(id: number) {
+    setSaving(true)
+    try {
+      await $deleteWindow({ data: id })
+      onWindowAdded()
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function saveNew() {
     setSaving(true)
     try {
@@ -420,7 +430,17 @@ export function WindowsTable({
               <TableCell>{win.materialType}</TableCell>
               <TableCell>{win.meterPrice}</TableCell>
               <TableCell>{win.totalPrice}</TableCell>
-              <TableCell />
+              <TableCell>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  onClick={e => { e.stopPropagation(); deleteWin(win.id) }}
+                  disabled={saving}
+                >
+                  Delete
+                </Button>
+              </TableCell>
             </TableRow>
           )
         )}
