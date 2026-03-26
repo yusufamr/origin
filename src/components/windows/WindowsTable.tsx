@@ -217,7 +217,7 @@ function RowInputs({
         <Input type="number" value={row.totalHeight} onChange={e => onChange('totalHeight', e.target.value)} placeholder="0.00" className="min-w-[70px]" />
       </TableCell>
       <TableCell>
-        <Input type="number" value={row.totalArea} onChange={e => onChange('totalArea', e.target.value)} placeholder="0.00" className="min-w-[70px]" />
+        <Input type="number" value={row.totalArea} readOnly placeholder="0.00" className="min-w-[70px] bg-muted/50 cursor-default" />
       </TableCell>
       <TableCell>
         <Input type="number" value={row.count} onChange={e => onChange('count', e.target.value)} placeholder="0" className="min-w-[60px]" />
@@ -246,7 +246,7 @@ function RowInputs({
         <Input type="number" value={row.meterPrice} onChange={e => onChange('meterPrice', e.target.value)} placeholder="0.00" className="min-w-[80px]" />
       </TableCell>
       <TableCell>
-        <Input type="number" value={row.totalPrice} onChange={e => onChange('totalPrice', e.target.value)} placeholder="0.00" className="min-w-[80px]" />
+        <Input type="number" value={row.totalPrice} readOnly placeholder="0.00" className="min-w-[80px] bg-muted/50 cursor-default" />
       </TableCell>
     </>
   )
@@ -264,12 +264,21 @@ export function WindowsTable({
   const [editRow, setEditRow] = useState<RowFields>(emptyRow)
   const [saving, setSaving] = useState(false)
 
+  function withDerived(prev: RowFields, field: keyof RowFields, value: string | boolean): RowFields {
+    const next = { ...prev, [field]: value }
+    const area = (parseFloat(next.totalHeight) || 0) * (parseFloat(next.width) || 0)
+    next.totalArea = area > 0 ? String(area) : ''
+    const price = (parseFloat(next.meterPrice) || 0) * area * (parseInt(next.count) || 0)
+    next.totalPrice = price > 0 ? String(price) : ''
+    return next
+  }
+
   function setNewField(field: keyof RowFields, value: string | boolean) {
-    setNewRow(prev => ({ ...prev, [field]: value }))
+    setNewRow(prev => withDerived(prev, field, value))
   }
 
   function setEditField(field: keyof RowFields, value: string | boolean) {
-    setEditRow(prev => ({ ...prev, [field]: value }))
+    setEditRow(prev => withDerived(prev, field, value))
   }
 
   function startEdit(win: Window) {
