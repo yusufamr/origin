@@ -9,7 +9,7 @@ import {
 } from '#/components/ui/table'
 import { Input } from '#/components/ui/input'
 import { Button } from '#/components/ui/button'
-import { $createWindow, $updateWindow, $deleteWindow } from '#/server/windows'
+import { $createWindow, $updateWindow, $deleteWindow, $duplicateWindow } from '#/server/windows'
 import type { Window } from '#/db'
 
 const WINDOW_TYPES = ['دائره', 'جرار', 'مفصلي', 'قلاب', 'مفصلي قلاب', 'ثابت', 'أبواب'] as const
@@ -306,6 +306,16 @@ export function WindowsTable({
     }
   }
 
+  async function duplicateWin(id: number) {
+    setSaving(true)
+    try {
+      await $duplicateWindow({ data: id })
+      onWindowAdded()
+    } finally {
+      setSaving(false)
+    }
+  }
+
   async function saveNew() {
     setSaving(true)
     try {
@@ -431,15 +441,25 @@ export function WindowsTable({
               <TableCell>{win.meterPrice}</TableCell>
               <TableCell>{win.totalPrice}</TableCell>
               <TableCell>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="text-destructive hover:text-destructive"
-                  onClick={e => { e.stopPropagation(); deleteWin(win.id) }}
-                  disabled={saving}
-                >
-                  Delete
-                </Button>
+                <div className="flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={e => { e.stopPropagation(); duplicateWin(win.id) }}
+                    disabled={saving}
+                  >
+                    duplicate
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    onClick={e => { e.stopPropagation(); deleteWin(win.id) }}
+                    disabled={saving}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </TableCell>
             </TableRow>
           )

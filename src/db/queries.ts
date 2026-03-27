@@ -162,3 +162,10 @@ export function updateWindow(id: number, data: Partial<Omit<NewWindow, 'id' | 'p
 export function deleteWindow(id: number) {
   return db.delete(windows).where(eq(windows.id, id));
 }
+
+export async function duplicateWindow(id: number) {
+  const original = await db.query.windows.findFirst({ where: eq(windows.id, id) });
+  if (!original) throw new Error(`Window ${id} not found`);
+  const { id: _id, ...data } = original;
+  return db.insert(windows).values(data).returning();
+}
