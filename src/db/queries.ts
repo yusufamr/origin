@@ -45,9 +45,23 @@ export function listProjects() {
 }
 
 export function getProjectById(id: number) {
-  return db.query.projects.findFirst({
-    where: eq(projects.id, id),
-  });
+  return db
+    .select({
+      id: projects.id,
+      name: projects.name,
+      address: projects.address,
+      city: projects.city,
+      status: projects.status,
+      createdAt: projects.createdAt,
+      clientFirstName: clients.firstName,
+      clientLastName: clients.lastName,
+      clientPhone: clients.phone,
+      clientPhone2: clients.phone2,
+    })
+    .from(projects)
+    .leftJoin(clients, eq(projects.clientId, clients.id))
+    .where(eq(projects.id, id))
+    .then((rows) => rows[0] ?? null);
 }
 
 export function listProjectsByClient(clientId: number) {

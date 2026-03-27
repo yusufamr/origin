@@ -57,6 +57,35 @@ function ProjectPage() {
             </h1>
             {project && <StatusBadge status={project.status} />}
           </div>
+          {project && (
+            <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-[var(--sea-ink-soft)]">
+              {(project.clientFirstName || project.clientLastName) && (
+                <span>
+                  <span className="font-medium text-[var(--sea-ink)]">Client: </span>
+                  {`${project.clientFirstName ?? ''} ${project.clientLastName ?? ''}`.trim()}
+                </span>
+              )}
+              {project.clientPhone && (
+                <span>
+                  <span className="font-medium text-[var(--sea-ink)]">Phone: </span>
+                  {project.clientPhone}
+                  {project.clientPhone2 && ` / ${project.clientPhone2}`}
+                </span>
+              )}
+              {project.city && (
+                <span>
+                  <span className="font-medium text-[var(--sea-ink)]">City: </span>
+                  {project.city}
+                </span>
+              )}
+              {project.address && (
+                <span>
+                  <span className="font-medium text-[var(--sea-ink)]">Address: </span>
+                  {project.address}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {project && (
