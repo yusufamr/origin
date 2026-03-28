@@ -102,10 +102,10 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                           ['نوع الزجاج', win.glass],
                           ['لون الزجاج', win.glassColor],
                           ['السلك', win.wire],
-                          ['الابعاد', `${win.width}  *  ${win.totalHeight}`, true],
+                          ['الابعاد', `${(parseFloat(win.width) / 100).toFixed(2)}  *  ${(parseFloat(win.totalHeight) / 100).toFixed(2)}`, true],
                           ['المساحة', win.totalArea],
-                          ['سعر المتر', Number(win.meterPrice).toLocaleString('ar-EG')],
-                          ['السعر الكلي للصنف', Number(win.totalPrice).toLocaleString('ar-EG'), true],
+                          ['سعر المتر', Number(win.meterPrice)],
+                          ['السعر الكلي للصنف', Number(win.totalPrice), true],
                         ] as [string, string, boolean?][]).map(([label, value, bold]) => (
                           <tr key={label}>
                             <td style={{ ...s.labelCell, ...(label === 'السعر الكلي للصنف' ? s.totalLabelCell : {}) }}>

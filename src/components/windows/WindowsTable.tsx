@@ -226,9 +226,12 @@ export function WindowsTable({
 
   function withDerived(prev: RowFields, field: keyof RowFields, value: string | boolean): RowFields {
     const next = { ...prev, [field]: value }
-    const area = (parseFloat(next.totalHeight) || 0) * (parseFloat(next.width) || 0)
-    next.totalArea = area > 0 ? String(area) : ''
-    const price = (parseFloat(next.meterPrice) || 0) * area * (parseInt(next.count) || 0)
+    const areaCm2 = (parseFloat(next.totalHeight) || 0) * (parseFloat(next.width) || 0)
+    let areaM2 = areaCm2 / 10000
+    if (areaM2 > 0 && areaM2 < 1) areaM2 = 1
+    if (areaM2 > 0 && next.type === 'باندات') areaM2 = areaM2 * 1.5
+    next.totalArea = areaM2 > 0 ? String(areaM2) : ''
+    const price = (parseFloat(next.meterPrice) || 0) * areaM2 * (parseInt(next.count) || 0)
     next.totalPrice = price > 0 ? String(price) : ''
     return next
   }
