@@ -140,6 +140,17 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                 </div>
               ))}
 
+              {/* ── شروط التعاقد ──────────────────────────────────────── */}
+              <div style={s.termsSection}>
+                <div style={s.termsTitle}>شروط التعاقد</div>
+                <ol style={s.termsList}>
+                  <li style={s.termsItem}>يلتزم العميل بسداد ٥٠٪ من إجمالي قيمة العقد كدفعة مقدمة عند توقيع العقد، والباقي عند التسليم.</li>
+                  <li style={s.termsItem}>مدة التنفيذ المتفق عليها لا تشمل فترات التأخير الناتجة عن ظروف خارجة عن إرادة الشركة.</li>
+                  <li style={s.termsItem}>تضمن الشركة جميع المنتجات لمدة سنة من تاريخ التسليم ضد عيوب الصناعة والتركيب.</li>
+                  <li style={s.termsItem}>أي تعديلات على المواصفات بعد توقيع العقد تستلزم موافقة خطية من الطرفين وقد تؤثر على السعر والمدة.</li>
+                </ol>
+              </div>
+
             </td>
           </tr>
         </tbody>
@@ -273,5 +284,27 @@ const s: Record<string, React.CSSProperties> = {
     border: 'none',
     borderTop: '1px solid #ccc',
     margin: '16px 0',
+  },
+  termsSection: {
+    marginTop: 32,
+    borderTop: '2px solid #000',
+    paddingTop: 12,
+  },
+  termsTitle: {
+    fontWeight: 700,
+    fontSize: 15,
+    marginBottom: 10,
+    textAlign: 'right',
+  },
+  termsList: {
+    margin: 0,
+    paddingRight: 20,
+    paddingLeft: 0,
+    textAlign: 'right',
+  },
+  termsItem: {
+    marginBottom: 6,
+    fontSize: 12,
+    lineHeight: 1.7,
   },
 }
