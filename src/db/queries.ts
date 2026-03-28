@@ -105,6 +105,10 @@ export function deleteUserById(id: number) {
   return db.delete(users).where(eq(users.id, id))
 }
 
+export function updateUserPassword(id: number, password: string) {
+  return db.update(users).set({ password }).where(eq(users.id, id))
+}
+
 export function countUsers() {
   return db.select({ count: count() }).from(users)
 }

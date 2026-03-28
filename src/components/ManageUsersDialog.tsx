@@ -9,7 +9,7 @@ import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { Button } from '#/components/ui/button'
 import type { Role } from '#/lib/auth'
-import { $listUsers, $addUser, $deleteUser } from '#/server/auth'
+import { $listUsers, $addUser, $deleteUser, $changeUserPassword } from '#/server/auth'
 
 type UserRow = { id: number; username: string; role: string; displayName: string }
 
@@ -30,6 +30,8 @@ export function ManageUsersDialog({
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('employee')
   const [error, setError] = useState('')
+  const [changingPasswordId, setChangingPasswordId] = useState<number | null>(null)
+  const [newPassword, setNewPassword] = useState('')
 
   // Fetch users whenever the dialog opens
   useEffect(() => {
@@ -59,6 +61,13 @@ export function ManageUsersDialog({
     setUsers((prev) => prev.filter((u) => u.id !== id))
   }
 
+  async function handleChangePassword(id: number) {
+    if (!newPassword) return
+    await $changeUserPassword({ data: { id, password: newPassword } })
+    setChangingPasswordId(null)
+    setNewPassword('')
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -66,27 +75,58 @@ export function ManageUsersDialog({
           <DialogTitle>Manage Users</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+        <div className="flex flex-col gap-2 max-h-64 overflow-y-auto">
           {users.map((u) => (
             <div
               key={u.id}
-              className="flex items-center justify-between rounded-lg border border-[var(--line)] px-3 py-2 text-sm"
+              className="flex flex-col rounded-lg border border-[var(--line)] px-3 py-2 text-sm gap-2"
             >
-              <div className="flex flex-col">
-                <span className="font-medium">{u.displayName}</span>
-                <span className="text-xs text-muted-foreground">
-                  @{u.username} · {u.role}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="font-medium">{u.displayName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    @{u.username} · {u.role}
+                  </span>
+                </div>
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setChangingPasswordId(changingPasswordId === u.id ? null : u.id)
+                      setNewPassword('')
+                    }}
+                  >
+                    Change Password
+                  </Button>
+                  {String(u.id) !== currentUserId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleDeleteUser(u.id)}
+                    >
+                      Remove
+                    </Button>
+                  )}
+                </div>
               </div>
-              {String(u.id) !== currentUserId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => handleDeleteUser(u.id)}
-                >
-                  Remove
-                </Button>
+              {changingPasswordId === u.id && (
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="h-7 text-xs"
+                  />
+                  <Button size="sm" className="h-7 text-xs" onClick={() => handleChangePassword(u.id)}>
+                    Save
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setChangingPasswordId(null); setNewPassword('') }}>
+                    Cancel
+                  </Button>
+                </div>
               )}
             </div>
           ))}

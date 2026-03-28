@@ -6,6 +6,7 @@ import {
   createUser,
   deleteUserById,
   countUsers,
+  updateUserPassword,
 } from '#/db/queries'
 import type { SessionUser, Role } from '#/lib/auth'
 
@@ -53,4 +54,10 @@ export const $deleteUser = createServerFn({ method: 'POST' })
   .inputValidator((id: number) => id)
   .handler(async ({ data: id }) => {
     await deleteUserById(id)
+  })
+
+export const $changeUserPassword = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: number; password: string }) => data)
+  .handler(async ({ data }) => {
+    await updateUserPassword(data.id, data.password)
   })
