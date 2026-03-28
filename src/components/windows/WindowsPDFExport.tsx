@@ -1,0 +1,244 @@
+import type { Window } from '#/db'
+
+// Mock image mapping: category → path
+// Replace values with actual image paths when available
+const CATEGORY_IMAGE_MAP: Record<string, string> = {}
+
+function getWindowImage(category: string): string {
+  return CATEGORY_IMAGE_MAP[category] ?? '/images/windows/placeholder.png'
+}
+
+type PDFProject = {
+  name: string
+  address: string
+  city: string
+  clientFirstName: string | null
+  clientLastName: string | null
+  clientPhone: string | null
+  clientPhone2: string | null
+}
+
+interface WindowsPDFExportProps {
+  project: PDFProject
+  windows: Window[]
+}
+
+
+
+export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
+  const clientName =
+    [project.clientFirstName, project.clientLastName].filter(Boolean).join(' ') || '—'
+  const phones = [project.clientPhone, project.clientPhone2].filter(Boolean).join(' / ')
+  const cityLabel = project.city
+
+  return (
+    <div id="pdf-export-content" dir="rtl">
+      {/* ── Page header ─────────────────────────────────────────────── */}
+      <div style={s.header}>
+        <div style={s.companyText}>
+          <div style={s.companyName}>Origin UPVC</div>
+          <div style={s.companySubtitle}>للأبواب والنوافذ والواجهات</div>
+        </div>
+        <img src="/images/origin-logo.png" alt="Origin Logo" style={s.logo} />
+      </div>
+      <div style={s.headerDivider} />
+
+      {/* ── Client info ─────────────────────────────────────────────── */}
+      <div style={s.clientRow}>
+        <div style={s.clientChip}>
+          <span style={s.chipLabel}>اسم العميل</span>
+          <span style={s.chipValue}>{clientName}</span>
+        </div>
+        {phones && (
+          <div style={s.clientChip}>
+            <span style={s.chipLabel}>الهاتف</span>
+            <span style={s.chipValue}>{phones}</span>
+          </div>
+        )}
+        {project.address && (
+          <div style={s.clientChip}>
+            <span style={s.chipLabel}>العنوان</span>
+            <span style={s.chipValue}>{project.address}</span>
+          </div>
+        )}
+        {project.city && (
+          <div style={s.clientChip}>
+            <span style={s.chipLabel}>المدينة</span>
+            <span style={s.chipValue}>{cityLabel}</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── Windows ─────────────────────────────────────────────────── */}
+      {windows.map((win, idx) => (
+        <div key={win.id} style={s.windowBlock}>
+          <div style={s.windowRow}>
+            {/* Info table */}
+            <table style={s.infoTable}>
+              <tbody>
+                {([
+                  ['اسم الوحدة', win.category],
+                  ['العدد', String(win.count)],
+                  ['نوع القطاع', win.materialType],
+                  ['اللون', win.color],
+                  ['نوع الزجاج', win.glass],
+                  ['لون الزجاج', win.glassColor],
+                  ['السلك', win.wire],
+                  ['الابعاد', `${win.width}  *  ${win.totalHeight}`, true],
+                  ['المساحة', win.totalArea],
+                  ['سعر المتر', Number(win.meterPrice).toLocaleString('ar-EG')],
+                  ['السعر الكلي للصنف', Number(win.totalPrice).toLocaleString('ar-EG'), true],
+                ] as [string, string, boolean?][]).map(([label, value, bold]) => (
+                  <tr key={label}>
+                    <td style={{ ...s.labelCell, ...(label === 'السعر الكلي للصنف' ? s.totalLabelCell : {}) }}>
+                      {label}
+                    </td>
+                    <td style={{ ...s.valueCell, ...(bold ? s.boldValue : {}) }}>
+                      {value}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            {/* Window image */}
+            <div style={s.imageWrap}>
+              <img
+                src={getWindowImage(win.category)}
+                alt={win.category}
+                style={s.windowImage}
+                onError={e => {
+                  (e.currentTarget as HTMLImageElement).style.display = 'none'
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Signature */}
+          <div style={s.signature}>توقيع العميل</div>
+
+          {/* Separator between windows */}
+          {idx < windows.length - 1 && <hr style={s.separator} />}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ── Styles ───────────────────────────────────────────────────────────────────
+
+const s: Record<string, React.CSSProperties> = {
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 0 12px',
+  },
+  companyText: {
+    textAlign: 'right',
+  },
+  companyName: {
+    fontWeight: 700,
+    fontSize: 22,
+    letterSpacing: 1,
+  },
+  companySubtitle: {
+    fontSize: 15,
+    marginTop: 2,
+  },
+  logo: {
+    height: 64,
+    objectFit: 'contain',
+  },
+  headerDivider: {
+    borderTop: '2px solid #000',
+    marginBottom: 14,
+  },
+  clientRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginBottom: 20,
+    justifyContent: 'flex-end',
+  },
+  clientChip: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    border: '1px solid #aaa',
+    borderRadius: 4,
+    overflow: 'hidden',
+    fontSize: 13,
+  },
+  chipLabel: {
+    background: '#e8e8e8',
+    fontWeight: 700,
+    padding: '4px 10px',
+    borderLeft: '1px solid #aaa',
+  },
+  chipValue: {
+    padding: '4px 10px',
+  },
+  windowBlock: {
+    pageBreakInside: 'avoid',
+    breakInside: 'avoid',
+  },
+  windowRow: {
+    display: 'flex',
+    gap: 16,
+    marginBottom: 8,
+    alignItems: 'flex-start',
+  },
+  infoTable: {
+    flex: '0 0 48%',
+    borderCollapse: 'collapse',
+    fontSize: 13,
+    width: '48%',
+  },
+  labelCell: {
+    border: '1px solid #bbb',
+    padding: '4px 10px',
+    fontWeight: 700,
+    background: '#e8e8e8',
+    whiteSpace: 'nowrap',
+    textAlign: 'right',
+  },
+  totalLabelCell: {
+    background: '#d0d0d0',
+  },
+  valueCell: {
+    border: '1px solid #bbb',
+    padding: '4px 10px',
+    textAlign: 'right',
+  },
+  boldValue: {
+    fontWeight: 700,
+  },
+  imageWrap: {
+    flex: '0 0 48%',
+    width: '48%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 180,
+    border: '1px solid #ddd',
+    borderRadius: 4,
+    background: '#fafafa',
+  },
+  windowImage: {
+    maxWidth: '100%',
+    maxHeight: 220,
+    objectFit: 'contain',
+  },
+  signature: {
+    fontSize: 13,
+    fontWeight: 700,
+    textAlign: 'left',
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  separator: {
+    border: 'none',
+    borderTop: '1px solid #ccc',
+    margin: '16px 0',
+  },
+}

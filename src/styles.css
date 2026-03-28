@@ -400,3 +400,35 @@ a {
     @apply font-sans;
   }
 }
+
+/* ── PDF Print Export ──────────────────────────────────────────────────── */
+#pdf-export-content {
+  display: none;
+}
+
+@media print {
+  @page {
+    margin: 16mm 14mm;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  #pdf-export-content,
+  #pdf-export-content * {
+    visibility: visible;
+  }
+
+  #pdf-export-content {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff;
+    color: #000;
+    font-family: Arial, 'Segoe UI', Tahoma, sans-serif;
+    font-size: 13px;
+  }
+}

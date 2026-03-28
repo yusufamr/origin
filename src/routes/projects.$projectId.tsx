@@ -2,6 +2,7 @@ import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { Button } from '#/components/ui/button'
 import { WindowsTable } from '#/components/windows/WindowsTable'
+import { WindowsPDFExport } from '#/components/windows/WindowsPDFExport'
 import { StatusBadge } from '#/components/projects/StatusBadge'
 import { $getProjectById, $updateProjectStatus } from '#/server/projects'
 import { $listWindowsByProject } from '#/server/windows'
@@ -93,6 +94,11 @@ function ProjectPage() {
               Mark as {project.status === 'done' ? 'Sent' : 'Done'}
             </Button>
           )}
+          {project && windows.length > 0 && (
+            <Button variant="outline" onClick={() => window.print()}>
+              تحميل PDF
+            </Button>
+          )}
           <Button onClick={() => setAddingWindow(true)} disabled={addingWindow}>
             Add Window
           </Button>
@@ -111,6 +117,10 @@ function ProjectPage() {
           onCancel={() => setAddingWindow(false)}
           onWindowAdded={handleWindowAdded}
         />
+      )}
+
+      {project && windows.length > 0 && (
+        <WindowsPDFExport project={project} windows={windows} />
       )}
     </main>
   )
