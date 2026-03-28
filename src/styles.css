@@ -407,8 +407,9 @@ a {
 }
 
 @media print {
+  /* Remove browser-added URL / date / title decorations */
   @page {
-    margin: 16mm 14mm;
+    margin: 0;
   }
 
   body * {
@@ -431,4 +432,5 @@ a {
     font-family: Arial, 'Segoe UI', Tahoma, sans-serif;
     font-size: 13px;
   }
+
 }

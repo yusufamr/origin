@@ -23,104 +23,129 @@ interface WindowsPDFExportProps {
   windows: Window[]
 }
 
-
+const CITY_LABELS: Record<string, string> = {
+  cairo: 'القاهرة',
+  alex: 'الإسكندرية',
+  giza: 'الجيزة',
+}
 
 export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
   const clientName =
     [project.clientFirstName, project.clientLastName].filter(Boolean).join(' ') || '—'
   const phones = [project.clientPhone, project.clientPhone2].filter(Boolean).join(' / ')
-  const cityLabel = project.city
+  const cityLabel = CITY_LABELS[project.city] ?? project.city
 
   return (
     <div id="pdf-export-content" dir="rtl">
-      {/* ── Page header ─────────────────────────────────────────────── */}
-      <div style={s.header}>
-        <div style={s.companyText}>
-          <div style={s.companyName}>Origin UPVC</div>
-          <div style={s.companySubtitle}>للأبواب والنوافذ والواجهات</div>
-        </div>
-        <img src="/images/origin-logo.png" alt="Origin Logo" style={s.logo} />
-      </div>
-      <div style={s.headerDivider} />
+      {/*
+        Using a <table> so the browser automatically repeats <thead>
+        at the top of every printed page with correct spacing.
+      */}
+      <table style={s.table}>
+        {/* ── Repeating page header ───────────────────────────────────── */}
+        <thead>
+          <tr>
+            <td style={s.headerCell}>
+              <div style={s.header}>
+                <div style={s.companyText}>
+                  <div style={s.companyName}>Origin UPVC</div>
+                  <div style={s.companySubtitle}>للأبواب والنوافذ والواجهات</div>
+                </div>
+                <img src="/images/origin-logo.png" alt="Origin Logo" style={s.logo} />
+              </div>
+              <div style={s.headerDivider} />
+            </td>
+          </tr>
+        </thead>
 
-      {/* ── Client info ─────────────────────────────────────────────── */}
-      <div style={s.clientRow}>
-        <div style={s.clientChip}>
-          <span style={s.chipLabel}>اسم العميل</span>
-          <span style={s.chipValue}>{clientName}</span>
-        </div>
-        {phones && (
-          <div style={s.clientChip}>
-            <span style={s.chipLabel}>الهاتف</span>
-            <span style={s.chipValue}>{phones}</span>
-          </div>
-        )}
-        {project.address && (
-          <div style={s.clientChip}>
-            <span style={s.chipLabel}>العنوان</span>
-            <span style={s.chipValue}>{project.address}</span>
-          </div>
-        )}
-        {project.city && (
-          <div style={s.clientChip}>
-            <span style={s.chipLabel}>المدينة</span>
-            <span style={s.chipValue}>{cityLabel}</span>
-          </div>
-        )}
-      </div>
+        {/* ── Body ────────────────────────────────────────────────────── */}
+        <tbody>
+          <tr>
+            <td style={s.bodyCell}>
 
-      {/* ── Windows ─────────────────────────────────────────────────── */}
-      {windows.map((win, idx) => (
-        <div key={win.id} style={s.windowBlock}>
-          <div style={s.windowRow}>
-            {/* Info table */}
-            <table style={s.infoTable}>
-              <tbody>
-                {([
-                  ['اسم الوحدة', win.category],
-                  ['العدد', String(win.count)],
-                  ['نوع القطاع', win.materialType],
-                  ['اللون', win.color],
-                  ['نوع الزجاج', win.glass],
-                  ['لون الزجاج', win.glassColor],
-                  ['السلك', win.wire],
-                  ['الابعاد', `${win.width}  *  ${win.totalHeight}`, true],
-                  ['المساحة', win.totalArea],
-                  ['سعر المتر', Number(win.meterPrice).toLocaleString('ar-EG')],
-                  ['السعر الكلي للصنف', Number(win.totalPrice).toLocaleString('ar-EG'), true],
-                ] as [string, string, boolean?][]).map(([label, value, bold]) => (
-                  <tr key={label}>
-                    <td style={{ ...s.labelCell, ...(label === 'السعر الكلي للصنف' ? s.totalLabelCell : {}) }}>
-                      {label}
-                    </td>
-                    <td style={{ ...s.valueCell, ...(bold ? s.boldValue : {}) }}>
-                      {value}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              {/* Client info */}
+              <div style={s.clientRow}>
+                <div style={s.clientChip}>
+                  <span style={s.chipLabel}>اسم العميل</span>
+                  <span style={s.chipValue}>{clientName}</span>
+                </div>
+                {phones && (
+                  <div style={s.clientChip}>
+                    <span style={s.chipLabel}>الهاتف</span>
+                    <span style={s.chipValue}>{phones}</span>
+                  </div>
+                )}
+                {project.address && (
+                  <div style={s.clientChip}>
+                    <span style={s.chipLabel}>العنوان</span>
+                    <span style={s.chipValue}>{project.address}</span>
+                  </div>
+                )}
+                {project.city && (
+                  <div style={s.clientChip}>
+                    <span style={s.chipLabel}>المدينة</span>
+                    <span style={s.chipValue}>{cityLabel}</span>
+                  </div>
+                )}
+              </div>
 
-            {/* Window image */}
-            <div style={s.imageWrap}>
-              <img
-                src={getWindowImage(win.category)}
-                alt={win.category}
-                style={s.windowImage}
-                onError={e => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none'
-                }}
-              />
-            </div>
-          </div>
+              {/* Windows */}
+              {windows.map((win, idx) => (
+                <div key={win.id} style={s.windowBlock}>
+                  <div style={s.windowRow}>
+                    {/* Info table */}
+                    <table style={s.infoTable}>
+                      <tbody>
+                        {([
+                          ['اسم الوحدة', win.category],
+                          ['العدد', String(win.count)],
+                          ['نوع القطاع', win.materialType],
+                          ['اللون', win.color],
+                          ['نوع الزجاج', win.glass],
+                          ['لون الزجاج', win.glassColor],
+                          ['السلك', win.wire],
+                          ['الابعاد', `${win.width}  *  ${win.totalHeight}`, true],
+                          ['المساحة', win.totalArea],
+                          ['سعر المتر', Number(win.meterPrice).toLocaleString('ar-EG')],
+                          ['السعر الكلي للصنف', Number(win.totalPrice).toLocaleString('ar-EG'), true],
+                        ] as [string, string, boolean?][]).map(([label, value, bold]) => (
+                          <tr key={label}>
+                            <td style={{ ...s.labelCell, ...(label === 'السعر الكلي للصنف' ? s.totalLabelCell : {}) }}>
+                              {label}
+                            </td>
+                            <td style={{ ...s.valueCell, ...(bold ? s.boldValue : {}) }}>
+                              {value}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
 
-          {/* Signature */}
-          <div style={s.signature}>توقيع العميل</div>
+                    {/* Window image */}
+                    <div style={s.imageWrap}>
+                      <img
+                        src={getWindowImage(win.category)}
+                        alt={win.category}
+                        style={s.windowImage}
+                        onError={e => {
+                          (e.currentTarget as HTMLImageElement).style.display = 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
 
-          {/* Separator between windows */}
-          {idx < windows.length - 1 && <hr style={s.separator} />}
-        </div>
-      ))}
+                  {/* Signature */}
+                  <div style={s.signature}>توقيع العميل</div>
+
+                  {/* Separator between windows */}
+                  {idx < windows.length - 1 && <hr style={s.separator} />}
+                </div>
+              ))}
+
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   )
 }
@@ -128,11 +153,22 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
 // ── Styles ───────────────────────────────────────────────────────────────────
 
 const s: Record<string, React.CSSProperties> = {
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+  },
+  headerCell: {
+    padding: '6mm 14mm 3mm',
+  },
+  bodyCell: {
+    padding: '4mm 14mm 14mm',
+    verticalAlign: 'top',
+  },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: '8px 0 12px',
+    paddingBottom: 10,
   },
   companyText: {
     textAlign: 'right',
@@ -152,7 +188,6 @@ const s: Record<string, React.CSSProperties> = {
   },
   headerDivider: {
     borderTop: '2px solid #000',
-    marginBottom: 14,
   },
   clientRow: {
     display: 'flex',
