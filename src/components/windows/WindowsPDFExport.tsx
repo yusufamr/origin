@@ -1,11 +1,8 @@
 import type { Window } from '#/db'
-
-// Mock image mapping: category → path
-// Replace values with actual image paths when available
-const CATEGORY_IMAGE_MAP: Record<string, string> = {}
+import { CATEGORY_IMAGES } from '#/constants/windows'
 
 function getWindowImage(category: string): string {
-  return CATEGORY_IMAGE_MAP[category] ?? '/images/windows/placeholder.png'
+  return CATEGORY_IMAGES[category] ?? '/images/windows/placeholder.png'
 }
 
 type PDFProject = {
