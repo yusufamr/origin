@@ -95,7 +95,18 @@ function ProjectPage() {
             </Button>
           )}
           {project && windows.length > 0 && (
-            <Button variant="outline" onClick={() => window.print()}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const clientName = [project.clientFirstName, project.clientLastName]
+                  .filter(Boolean)
+                  .join(' ')
+                const prev = document.title
+                document.title = clientName || project.name
+                window.print()
+                document.title = prev
+              }}
+            >
               تحميل PDF
             </Button>
           )}
