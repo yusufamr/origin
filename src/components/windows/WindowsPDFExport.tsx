@@ -102,7 +102,8 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                           ['نوع الزجاج', win.glass],
                           ['لون الزجاج', win.glassColor],
                           ['السلك', win.wire],
-                          ['الابعاد', `${(parseFloat(win.width) / 100).toFixed(2)}  *  ${(parseFloat(win.totalHeight) / 100).toFixed(2)}`, true],
+                          ['العرض', `${(parseFloat(win.width) / 100).toFixed(2)} م`, true],
+                          ['الارتفاع الكلي', `${(parseFloat(win.totalHeight) / 100).toFixed(2)} م`, true],
                           ['المساحة', win.totalArea],
                           ['سعر المتر', Number(win.meterPrice)],
                           ['السعر الكلي للصنف', Number(win.totalPrice), true],
@@ -119,16 +120,27 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                       </tbody>
                     </table>
 
-                    {/* Window image */}
+                    {/* Window image with dimensions */}
                     <div style={s.imageWrap}>
-                      <img
-                        src={getWindowImage(win.category)}
-                        alt={win.category}
-                        style={s.windowImage}
-                        onError={e => {
-                          (e.currentTarget as HTMLImageElement).style.display = 'none'
-                        }}
-                      />
+                      {/* Height label on the right */}
+                      <div style={s.dimHeight}>
+                        {(parseFloat(win.totalHeight) / 100).toFixed(2)} م
+                      </div>
+                      {/* Image + width label stacked */}
+                      <div style={s.imageCol}>
+                        <img
+                          src={getWindowImage(win.category)}
+                          alt={win.category}
+                          style={s.windowImage}
+                          onError={e => {
+                            (e.currentTarget as HTMLImageElement).style.display = 'none'
+                          }}
+                        />
+                        {/* Width label below image */}
+                        <div style={s.dimWidth}>
+                          {(parseFloat(win.width) / 100).toFixed(2)} م
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -261,17 +273,43 @@ const s: Record<string, React.CSSProperties> = {
     flex: '0 0 48%',
     width: '48%',
     display: 'flex',
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 180,
     border: '1px solid #ddd',
     borderRadius: 4,
     background: '#fafafa',
+    padding: 8,
+    gap: 6,
+  },
+  imageCol: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 4,
+    flex: 1,
   },
   windowImage: {
     maxWidth: '100%',
     maxHeight: 220,
     objectFit: 'contain',
+  },
+  dimWidth: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#333',
+    textAlign: 'center',
+  },
+  dimHeight: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: '#333',
+    writingMode: 'vertical-rl',
+    textOrientation: 'mixed',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   signature: {
     fontSize: 13,
