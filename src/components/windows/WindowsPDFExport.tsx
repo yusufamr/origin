@@ -104,7 +104,7 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                           ['السلك', win.wire],
                           ['العرض', `${(parseFloat(win.width) / 100).toFixed(2)} م`, true],
                           ['الارتفاع الكلي', `${(parseFloat(win.totalHeight) / 100).toFixed(2)} م`, true],
-                          ['المساحة', win.totalArea],
+                          ['المساحة', `${win.totalArea} m²`],
                           ['سعر المتر', Number(win.meterPrice)],
                           ['السعر الكلي للصنف', Number(win.totalPrice), true],
                         ] as [string, string, boolean?][]).map(([label, value, bold]) => (
