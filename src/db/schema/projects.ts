@@ -17,6 +17,8 @@ export const projects = pgTable("projects", {
   status: projectStatusEnum("status").notNull().default("sent"),
   city: projectCityEnum("city").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  transportationFees: integer("transportation_fees"),
+  wireFees: integer("wire_fees"),
 });
 
 export type Project = typeof projects.$inferSelect;

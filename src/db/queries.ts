@@ -57,6 +57,8 @@ export function getProjectById(id: number) {
       clientLastName: clients.lastName,
       clientPhone: clients.phone,
       clientPhone2: clients.phone2,
+      transportationFees: projects.transportationFees,
+      wireFees: projects.wireFees,
     })
     .from(projects)
     .leftJoin(clients, eq(projects.clientId, clients.id))
@@ -76,6 +78,10 @@ export function createProject(data: NewProject) {
 
 export function updateProjectStatus(id: number, status: 'sent' | 'done') {
   return db.update(projects).set({ status }).where(eq(projects.id, id)).returning();
+}
+
+export function updateProjectFees(id: number, data: { transportationFees: number | null; wireFees: number | null }) {
+  return db.update(projects).set(data).where(eq(projects.id, id)).returning();
 }
 
 // ── Users ──────────────────────────────────────────────────────────────────

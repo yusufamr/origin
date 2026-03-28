@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { listProjects, getProjectById, createProject, updateProjectStatus, getProjectStatsByUser, getProjectYears } from '#/db/queries'
+import { listProjects, getProjectById, createProject, updateProjectStatus, updateProjectFees, getProjectStatsByUser, getProjectYears } from '#/db/queries'
 import type { NewProject } from '#/db'
 
 export const $listProjects = createServerFn().handler(async () => {
@@ -33,5 +33,15 @@ export const $updateProjectStatus = createServerFn({ method: 'POST' })
   .inputValidator((data: { id: number; status: 'sent' | 'done' }) => data)
   .handler(async ({ data }) => {
     const [project] = await updateProjectStatus(data.id, data.status)
+    return project
+  })
+
+export const $updateProjectFees = createServerFn({ method: 'POST' })
+  .inputValidator((data: { id: number; transportationFees: number | null; wireFees: number | null }) => data)
+  .handler(async ({ data }) => {
+    const [project] = await updateProjectFees(data.id, {
+      transportationFees: data.transportationFees,
+      wireFees: data.wireFees,
+    })
     return project
   })

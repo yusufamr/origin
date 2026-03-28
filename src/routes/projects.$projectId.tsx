@@ -4,7 +4,7 @@ import { Button } from '#/components/ui/button'
 import { WindowsTable } from '#/components/windows/WindowsTable'
 import { WindowsPDFExport } from '#/components/windows/WindowsPDFExport'
 import { StatusBadge } from '#/components/projects/StatusBadge'
-import { $getProjectById, $updateProjectStatus } from '#/server/projects'
+import { $getProjectById, $updateProjectStatus, $updateProjectFees } from '#/server/projects'
 import { $listWindowsByProject } from '#/server/windows'
 
 export const Route = createFileRoute('/projects/$projectId')({
@@ -25,6 +25,30 @@ function ProjectPage() {
   const router = useRouter()
   const [updating, setUpdating] = useState(false)
   const [addingWindow, setAddingWindow] = useState(false)
+  const [transportationFees, setTransportationFees] = useState<string>(
+    project?.transportationFees != null ? String(project.transportationFees) : ''
+  )
+  const [wireFees, setWireFees] = useState<string>(
+    project?.wireFees != null ? String(project.wireFees) : ''
+  )
+  const [savingFees, setSavingFees] = useState(false)
+
+  async function saveFees() {
+    if (!project) return
+    setSavingFees(true)
+    try {
+      await $updateProjectFees({
+        data: {
+          id: project.id,
+          transportationFees: transportationFees !== '' ? Number(transportationFees) : null,
+          wireFees: wireFees !== '' ? Number(wireFees) : null,
+        },
+      })
+      router.invalidate()
+    } finally {
+      setSavingFees(false)
+    }
+  }
 
   async function toggleStatus() {
     if (!project) return
@@ -85,6 +109,33 @@ function ProjectPage() {
                   {project.address}
                 </span>
               )}
+            </div>
+          )}
+          {project && (
+            <div className="mt-3 flex flex-wrap items-end gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[var(--sea-ink)]">Transportation Fees</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={transportationFees}
+                  onChange={(e) => setTransportationFees(e.target.value)}
+                  className="w-36 rounded border border-[var(--sea-ink-soft)] bg-transparent px-2 py-1 text-sm text-[var(--sea-ink)] focus:outline-none focus:ring-1 focus:ring-[var(--sea-ink)]"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-[var(--sea-ink)]">Wire Fees</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={wireFees}
+                  onChange={(e) => setWireFees(e.target.value)}
+                  className="w-36 rounded border border-[var(--sea-ink-soft)] bg-transparent px-2 py-1 text-sm text-[var(--sea-ink)] focus:outline-none focus:ring-1 focus:ring-[var(--sea-ink)]"
+                />
+              </div>
+              <Button variant="outline" onClick={saveFees} disabled={savingFees}>
+                {savingFees ? 'Saving…' : 'Save Fees'}
+              </Button>
             </div>
           )}
         </div>
