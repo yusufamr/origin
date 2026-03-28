@@ -119,6 +119,12 @@ const CATEGORIES: Record<string, string[]> = {
   
 }
 
+const COLOR_OPTIONS = ['بيج كريمي', 'ابيض']
+const GLASS_OPTIONS = ['سنجل 6 ملم', 'دبل جلاس 20 ملم', 'دبل جلاس جورجيا 20 ملم']
+const GLASS_COLOR_OPTIONS = ['ابيض عاكس', 'اخضر', 'اخضر فاتح', 'عسلي']
+const WIRE_OPTIONS = ['سلك جرار', 'سلك ثابت', 'لا']
+const MATERIAL_OPTIONS = ['akapen', 'fox']
+
 const selectClass =
   'h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 md:text-sm dark:bg-input/30'
 
@@ -142,7 +148,7 @@ type RowFields = {
   color: string
   glass: string
   glassColor: string
-  wire: boolean
+  wire: string
   materialType: string
   meterPrice: string
   totalPrice: string
@@ -180,7 +186,7 @@ const emptyRow: RowFields = {
   color: '',
   glass: '',
   glassColor: '',
-  wire: false,
+  wire: '',
   materialType: '',
   meterPrice: '',
   totalPrice: '',
@@ -259,24 +265,34 @@ function RowInputs({
         <Input type="number" value={row.count} onChange={e => onChange('count', e.target.value)} placeholder="0" className="min-w-[60px]" />
       </TableCell>
       <TableCell>
-        <Input value={row.color} onChange={e => onChange('color', e.target.value)} placeholder="Color" className="min-w-[80px]" />
+        <select value={row.color} onChange={e => onChange('color', e.target.value)} className={`${selectClass} min-w-[110px]`}>
+          <option value="">-- اختر --</option>
+          {COLOR_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </TableCell>
       <TableCell>
-        <Input value={row.glass} onChange={e => onChange('glass', e.target.value)} placeholder="Glass" className="min-w-[80px]" />
+        <select value={row.glass} onChange={e => onChange('glass', e.target.value)} className={`${selectClass} min-w-[170px]`}>
+          <option value="">-- اختر --</option>
+          {GLASS_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </TableCell>
       <TableCell>
-        <Input value={row.glassColor} onChange={e => onChange('glassColor', e.target.value)} placeholder="Glass Color" className="min-w-[80px]" />
+        <select value={row.glassColor} onChange={e => onChange('glassColor', e.target.value)} className={`${selectClass} min-w-[120px]`}>
+          <option value="">-- اختر --</option>
+          {GLASS_COLOR_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </TableCell>
       <TableCell>
-        <input
-          type="checkbox"
-          checked={row.wire}
-          onChange={e => onChange('wire', e.target.checked)}
-          className="h-4 w-4 cursor-pointer"
-        />
+        <select value={row.wire} onChange={e => onChange('wire', e.target.value)} className={`${selectClass} min-w-[110px]`}>
+          <option value="">-- اختر --</option>
+          {WIRE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </TableCell>
       <TableCell>
-        <Input value={row.materialType} onChange={e => onChange('materialType', e.target.value)} placeholder="Material" className="min-w-[80px]" />
+        <select value={row.materialType} onChange={e => onChange('materialType', e.target.value)} className={`${selectClass} min-w-[90px]`}>
+          <option value="">-- اختر --</option>
+          {MATERIAL_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
       </TableCell>
       <TableCell>
         <Input type="number" value={row.meterPrice} onChange={e => onChange('meterPrice', e.target.value)} placeholder="0.00" className="min-w-[80px]" />
@@ -472,7 +488,7 @@ export function WindowsTable({
               <TableCell>{win.color}</TableCell>
               <TableCell>{win.glass}</TableCell>
               <TableCell>{win.glassColor}</TableCell>
-              <TableCell>{win.wire ? 'Yes' : 'No'}</TableCell>
+              <TableCell>{win.wire}</TableCell>
               <TableCell>{win.materialType}</TableCell>
               <TableCell>{win.meterPrice}</TableCell>
               <TableCell>{win.totalPrice}</TableCell>

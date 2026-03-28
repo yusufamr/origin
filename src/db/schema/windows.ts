@@ -3,7 +3,6 @@ import {
   serial,
   integer,
   text,
-  boolean,
   numeric,
 } from "drizzle-orm/pg-core";
 import { projects } from "./projects";
@@ -28,7 +27,7 @@ export const windows = pgTable("windows", {
   color: text("color").notNull(),
   glass: text("glass").notNull(),
   glassColor: text("glass_color").notNull(),
-  wire: boolean("wire").notNull().default(false),
+  wire: text("wire").notNull().notNull(),
   materialType: text("material_type").notNull(),
 
   meterPrice: numeric("meter_price", { precision: 10, scale: 2 }).notNull(),
