@@ -95,6 +95,7 @@ export function WindowsPDFExport({ project, windows }: WindowsPDFExportProps) {
                       <tbody>
                         {([
                           ['اسم الوحدة', win.category],
+                          ['المكان', win.place],
                           ['العدد', String(win.count)],
                           ['نوع القطاع', win.materialType],
                           ['اللون', win.color],

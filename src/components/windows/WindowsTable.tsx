@@ -15,6 +15,7 @@ import {
   WINDOW_TYPES,
   SUBTYPES,
   CATEGORIES,
+  PLACE_OPTIONS,
   COLOR_OPTIONS,
   GLASS_OPTIONS,
   GLASS_COLOR_OPTIONS,
@@ -38,6 +39,7 @@ type RowFields = {
   type: string
   subtype: string
   category: string
+  place: string
   width: string
   accurateHeight: string
   totalHeight: string
@@ -57,6 +59,7 @@ function windowToFields(win: Window): RowFields {
     type: win.type,
     subtype: win.subtype,
     category: win.category,
+    place: win.place ?? '',
     width: win.width,
     accurateHeight: win.accurateHeight,
     totalHeight: win.totalHeight,
@@ -76,6 +79,7 @@ const emptyRow: RowFields = {
   type: '',
   subtype: '',
   category: '',
+  place: '',
   width: '',
   accurateHeight: '',
   totalHeight: '',
@@ -145,6 +149,12 @@ function RowInputs({
           {categoryOptions.map(c => (
             <option key={c} value={c}>{c}</option>
           ))}
+        </select>
+      </TableCell>
+      <TableCell>
+        <select value={row.place} onChange={e => onChange('place', e.target.value)} className={`${selectClass} min-w-[120px]`}>
+          <option value="">-- اختر --</option>
+          {PLACE_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       </TableCell>
       <TableCell>
@@ -275,6 +285,7 @@ export function WindowsTable({
           type: newRow.type,
           subtype: newRow.subtype,
           category: newRow.category,
+          place: newRow.place,
           width: newRow.width,
           accurateHeight: newRow.accurateHeight,
           totalHeight: newRow.totalHeight,
@@ -306,6 +317,7 @@ export function WindowsTable({
           type: editRow.type,
           subtype: editRow.subtype,
           category: editRow.category,
+          place: editRow.place,
           width: editRow.width,
           accurateHeight: editRow.accurateHeight,
           totalHeight: editRow.totalHeight,
@@ -335,6 +347,7 @@ export function WindowsTable({
           <TableHead>Type</TableHead>
           <TableHead>Subtype</TableHead>
           <TableHead>Category</TableHead>
+          <TableHead>Place</TableHead>
           <TableHead>Width</TableHead>
           <TableHead>Acc. Height</TableHead>
           <TableHead>Total Height</TableHead>
@@ -378,6 +391,7 @@ export function WindowsTable({
               <TableCell>{win.type}</TableCell>
               <TableCell>{win.subtype}</TableCell>
               <TableCell>{win.category}</TableCell>
+              <TableCell>{win.place}</TableCell>
               <TableCell>{win.width}</TableCell>
               <TableCell>{win.accurateHeight}</TableCell>
               <TableCell>{win.totalHeight}</TableCell>

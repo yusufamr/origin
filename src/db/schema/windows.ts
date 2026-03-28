@@ -16,7 +16,7 @@ export const windows = pgTable("windows", {
   type: text("type").notNull(),
   subtype: text("subtype").notNull(),
   category: text("category").notNull(),
-  image: text("image"),
+  place: text("place").notNull(),
 
   width: numeric("width", { precision: 10, scale: 2 }).notNull(),
   accurateHeight: numeric("accurate_height", { precision: 10, scale: 2 }).notNull(),

@@ -105,6 +105,8 @@ export const CATEGORIES: Record<string, string[]> = {
   'مفصلي 2 ضلفه باندا': ['مفصلي 2 ضلفه باندا نص', 'مفصلي 2 ضلفه باندا  كامله', 'مفصلي 2 ضلفه باندا نص مع دوران من اعلى'],
 }
 
+export const PLACE_OPTIONS = ['غرفه نوم', 'غرفه معيشه', 'غرفه اطفال', 'صالون', 'سفره', 'مخزن', 'بدروم']
+
 export const COLOR_OPTIONS = ['بيج كريمي', 'ابيض']
 export const GLASS_OPTIONS = ['سنجل 6 ملم', 'دبل جلاس 20 ملم', 'دبل جلاس جورجيا 20 ملم']
 export const GLASS_COLOR_OPTIONS = ['ابيض عاكس', 'اخضر', 'اخضر فاتح', 'عسلي']
